@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "type": "video",
+    "content": "React to this Funny Clip",
+    "title": "Funny Animal Moment",
+    "description": "Watch this hilarious video and share your reaction!",
+    "mediaUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+    "completed": false
+  },
+  {
+    "id": 2,
+    "type": "image",
+    "content": "What does this image inspire in you?",
+    "title": "Creative Inspiration Challenge",
+    "description": "Look at this beautiful scene and describe what it makes you think of.",
+    "mediaUrl": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80",
+    "completed": false
+  },
+  {
+    "id": 3,
+    "type": "image",
+    "content": "Describe what you see and how it makes you feel",
+    "title": "Nature Connection Challenge",
+    "description": "Connect with this serene natural landscape.",
+    "mediaUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "completed": false
+  },
+  {
+    "id": 4,
+    "type": "text",
+    "content": "Share a moment when you felt truly innovative or creative",
+    "title": "Innovation Challenge",
+    "description": "Think about your most creative moment and describe it.",
+    "completed": false
+  },
+  {
+    "id": 5,
+    "type": "image",
+    "content": "What bright idea does this spark for you?",
+    "title": "Bright Ideas Challenge",
+    "description": "Let this image ignite your imagination.",
+    "mediaUrl": "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?auto=format&fit=crop&w=800&q=80",
+    "completed": false
+  }
+]

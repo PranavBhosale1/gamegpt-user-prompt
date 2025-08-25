@@ -1,0 +1,53 @@
+.challenge-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.challenge-card {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.challenge-img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 10px 0;
+}
+
+.complete-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #38b000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.coin-animation {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 48px;
+  animation: bounce-coin 1s ease-out forwards;
+}
+
+@keyframes bounce-coin {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-40px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-80px) scale(0.5);
+    opacity: 0;
+  }
+}
