@@ -30,19 +30,15 @@ const App = () => (
         <RecordingProvider>
           <Routes>
             {/* Chat bot home: accessible to guest + user */}
-            <Route path="/" element={<ChatHome />} />
+            <Route path="/" element={<Challenge />} />
             {/* Login page: visible only to guest */}
-            <Route path="/login" element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            } />
+           
             {/* All main features protected for users only */}
-            <Route path="/index" element={
+            {/* <Route path="/index" element={
               <ProtectedRoute>
                 <Index />
               </ProtectedRoute>
-            } />
+            } /> */}
             <Route path="/challenge" element={
               <ProtectedRoute>
                 <Challenge />

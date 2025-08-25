@@ -73,13 +73,13 @@ export function AppSidebar() {
       description: "Interactive behavioral challenges",
       color: "text-emerald-600"
     },
-    { 
-      title: "Connect to a Therapist", 
-      url: "/journal", 
-      icon: Users, 
-      description: "Professional mental health support",
-      color: "text-purple-600"
-    },
+    // { 
+    //   title: "Connect to a Therapist", 
+    //   url: "/journal", 
+    //   icon: Users, 
+    //   description: "Professional mental health support",
+    //   color: "text-purple-600"
+    // },
   ];
 
   const isActive = (path: string) => currentPath === path;
@@ -119,10 +119,10 @@ export function AppSidebar() {
                       to={item.url}
                       className={`flex items-center p-3 rounded-lg transition-all duration-200 ${getNavClass(item.url)} group`}
                       onClick={e => {
-                        if (!isLoggedIn) {
-                          e.preventDefault();
-                          navigate('/login');
-                        }
+                        // if (!isLoggedIn) {
+                        //   e.preventDefault();
+                        //   navigate('/login');
+                        // }
                         //else normal NavLink
                       }}
                     >

@@ -65,8 +65,8 @@ export function AppHeader() {
         </div>
 
         {/* Right section */}
-        <div className="flex items-center gap-3">
-          {!isLoggedIn ? (
+        {/* <div className="flex items-center gap-3">
+          {"1"==="1" ? (
             <Button 
               variant="outline"
               className="px-5 font-semibold"
@@ -110,7 +110,7 @@ export function AppHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-        </div>
+        </div> */}
       </div>
     </header>
   );
