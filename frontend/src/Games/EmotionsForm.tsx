@@ -120,11 +120,11 @@ const EmotionsForm: React.FC<EmotionFormProps> = ({ challengeData, onCompleteEmo
       formData.append("text", "textReaction");
  const userid=localStorage.getItem('userId');
 
-      const response = await fetch(S3_UPLOAD_URL, { method: "POST", body: formData });
-      if (!response.ok) throw new Error("Upload failed");
+      // const response = await fetch(S3_UPLOAD_URL, { method: "POST", body: formData });
+      // if (!response.ok) throw new Error("Upload failed");
 
-      const data = await response.json();
-      const mediaUrl = data?.url || "";
+      // const data = await response.json();
+      // const mediaUrl = data?.url || "";
 
       const selectedEmotions = selectedEmotionNames;
 const emotionsWithIntensity = Object.entries(selectedEmotions)
@@ -132,20 +132,20 @@ const emotionsWithIntensity = Object.entries(selectedEmotions)
 .join(", ");
 
 console.log('emotionsWithIntensity',emotionsWithIntensity)
-      const payload = {
-        challengeId: challengeData?.id ,
-        emotions: emotionsWithIntensity,
-        mediaUrl,
-        mode: "video",
-        userid:userid
-      };
-      const saveRes = await fetch(NODE_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      // const payload = {
+      //   challengeId: challengeData?.id ,
+      //   emotions: emotionsWithIntensity,
+      //   mediaUrl,
+      //   mode: "video",
+      //   userid:userid
+      // };
+      // const saveRes = await fetch(NODE_API_URL, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(payload),
+      // });
 
-      if (!saveRes.ok) throw new Error("DB save failed");
+      // if (!saveRes.ok) throw new Error("DB save failed");
 
       setIsSaving(false);
       setSaveSuccess(true);

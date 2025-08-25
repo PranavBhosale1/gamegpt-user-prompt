@@ -189,25 +189,25 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
           formData.append("challengeId", challengeData?.challengeId.toString() || "0");
           formData.append("text", textReaction);
 
-          const response = await fetch(S3_UPLOAD_URL, { method: "POST", body: formData });
-          if (!response.ok) throw new Error("Upload failed");
+          // const response = await fetch(S3_UPLOAD_URL, { method: "POST", body: formData });
+          // if (!response.ok) throw new Error("Upload failed");
 
-          const data = await response.json();
-          const mediaUrl = data?.url || "";
+          // const data = await response.json();
+          // const mediaUrl = data?.url || "";
         
-          const saveRes = await fetch(NODE_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              challengeId: challengeData?.challengeId,
-              mode,
-              text: null,
-              mediaUrl,
-              userid:userid
+          // const saveRes = await fetch(NODE_API_URL, {
+          //   method: "POST",
+          //   headers: { "Content-Type": "application/json" },
+          //   body: JSON.stringify({
+          //     challengeId: challengeData?.challengeId,
+          //     mode,
+          //     text: null,
+          //     mediaUrl,
+          //     userid:userid
 
-            }),
-          });
-          if (!saveRes.ok) throw new Error("DB save failed");
+          //   }),
+          // });
+          // if (!saveRes.ok) throw new Error("DB save failed");
           
           console.log("✅ Auto-saved audio recording successfully");
         }
@@ -222,18 +222,18 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
           return;
         }
 
-        const saveRes = await fetch(NODE_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            challengeId: challengeData?.challengeId,
-            mode,
-            text: textReaction.trim(),
-            mediaUrl: "",
-             userid:userid
-          }),
-        });
-        if (!saveRes.ok) throw new Error("DB save failed");
+        // const saveRes = await fetch(NODE_API_URL, {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({
+        //     challengeId: challengeData?.challengeId,
+        //     mode,
+        //     text: textReaction.trim(),
+        //     mediaUrl: "",
+        //      userid:userid
+        //   }),
+        // });
+        // if (!saveRes.ok) throw new Error("DB save failed");
       }
 
       toast({ title: "Reaction Saved!", description: "Your reaction has been saved successfully." });
