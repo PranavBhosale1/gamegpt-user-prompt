@@ -1,7 +1,7 @@
 import axios from 'axios';
 import environment from './environment';
 
-// ✅ Create custom instance
+//  Create custom instance
 const axiosInstance = axios.create({
   baseURL: environment.apiUrl,
   headers: {
@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// ✅ Request Interceptor
+//  Request Interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken'); // or any other logic
@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Response Interceptor
+//  Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

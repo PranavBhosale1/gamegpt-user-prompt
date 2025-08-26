@@ -52,7 +52,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
     };
   }, [mode]);
 
-  // ✅ ENHANCED: Complete cleanup function
+  //  ENHANCED: Complete cleanup function
   const cleanup = () => {
     try {
       if (mediaRecorderRef.current && isRecording) {
@@ -88,7 +88,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: "audio/webm" });
         setMediaBlob(blob);
-        console.log("✅ Audio recording stopped, blob created");
+        console.log(" Audio recording stopped, blob created");
       };
       
       mediaRecorder.start();
@@ -114,7 +114,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
     }
   };
 
-  // ✅ NEW: Force stop recording and get blob (for auto-save)
+  //  NEW: Force stop recording and get blob (for auto-save)
   const forceStopAndGetBlob = (): Promise<Blob | null> => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current || !isRecording) {
@@ -155,13 +155,13 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
 
   const handleExit = () => {
     toast({ title: "Thank you for participating!" });
-    cleanup(); // ✅ Use enhanced cleanup
+    cleanup(); //  Use enhanced cleanup
     if (onExit) {
       onExit();
     }
   };
 
-  // ✅ ENHANCED: Auto-save recording even if user didn't press stop
+  //  ENHANCED: Auto-save recording even if user didn't press stop
   const handleNext = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
@@ -171,7 +171,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
       if (mode === "audio") {
         let blobToUpload = mediaBlob;
         
-        // ✅ AUTO-SAVE: If still recording, force stop and get blob
+        //  AUTO-SAVE: If still recording, force stop and get blob
         if (isRecording) {
           console.log("🚨 User clicked next while recording - auto-saving...");
           toast({ 
@@ -209,7 +209,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
           // });
           // if (!saveRes.ok) throw new Error("DB save failed");
           
-          console.log("✅ Auto-saved audio recording successfully");
+          console.log(" Auto-saved audio recording successfully");
         }
       } else if (mode === "text") {
         if (!textReaction.trim()) {
@@ -245,7 +245,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
         if (mode === "audio") {
           setMode("text");
         } else {
-          cleanup(); // ✅ Cleanup before moving on
+          cleanup(); //  Cleanup before moving on
           onCompleteReaction();
         }
       }, 800);
@@ -258,7 +258,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
 
   const handleBack = () => {
     if (mode === "audio" && onBackToChallenge) {
-      cleanup(); // ✅ Cleanup before going back
+      cleanup(); //  Cleanup before going back
       onBackToChallenge();
     } else if (mode === "text") {
       setMode("audio");
@@ -336,7 +336,7 @@ const ReactionForm: React.FC<ReactionFormProps> = ({
                     </Button>
                   )}
                 </div>
-                {/* ✅ NEW: Helper text */}
+                {/*  NEW: Helper text */}
                 <p className="text-xs text-muted-foreground mt-2">
                   💡 Tip: You can click "Next" directly - we'll auto-save your recording!
                 </p>

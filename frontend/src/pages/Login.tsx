@@ -34,7 +34,7 @@ const Login: React.FC = () => {
         localStorage.setItem('fullname', fullname);
 const role = response.data.user.role; // Assuming the role is returned in the user object
 console.log('User role:', role); // Debugging line
-        setMessage('✅ Login successful');
+        setMessage(' Login successful');
        if (role === 'admin') {
     navigate('/index');
    } 

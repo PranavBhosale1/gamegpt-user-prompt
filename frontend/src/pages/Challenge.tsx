@@ -1,6 +1,6 @@
 import { useState, Suspense, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useRecording } from "@/Games/RecordingContext"; // ✅ Import useRecording
+import { useRecording } from "@/Games/RecordingContext"; //  Import useRecording
 import LandingPage from "@/Games/LandingPage";
 import ChallengePage from "@/Games/ChallengePage";
 import EmotionForm from "@/Games/EmotionsForm";
@@ -10,7 +10,7 @@ import challengeData from "@/data/challenges.json";
 
 export default function App() {
   const { toast } = useToast();
-  const { forceStopAndCleanup } = useRecording(); // ✅ Get cleanup function
+  const { forceStopAndCleanup } = useRecording(); //  Get cleanup function
   const [currentScreen, setCurrentScreen] = useState<"landing" | "challenge" | "emotion" | "reaction">("landing");
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
   const [currentChallengeData, setCurrentChallengeData] = useState<any>(null);
@@ -31,12 +31,12 @@ export default function App() {
         title: "🎉 All Challenges Complete!", 
         // description: "Congratulations! You've completed all challenges." 
       });
-      handleGameExit(); // ✅ Use proper exit
+      handleGameExit(); //  Use proper exit
     }
   };
 
   const handleGameExit = () => {
-    // ✅ FORCE STOP ALL RECORDING & CLEANUP
+    //  FORCE STOP ALL RECORDING & CLEANUP
     forceStopAndCleanup();
     
     toast({ title: "Thanks for playing! All recording stopped." });
@@ -45,7 +45,7 @@ export default function App() {
     setCurrentChallengeData(null);
   };
 
-  // ✅ Cleanup on component unmount
+  //  Cleanup on component unmount
   useEffect(() => {
     return () => {
       forceStopAndCleanup();
@@ -54,7 +54,7 @@ export default function App() {
 
   return (
     <Layout>
-      <div className="max-w-xl mx-auto pt-6"> {/* ✅ Reduced padding */}
+      <div className="max-w-xl mx-auto pt-6"> {/*  Reduced padding */}
         {currentScreen === "landing" && (
           <Suspense fallback={<div>Loading Landing...</div>}>
             <LandingPage onStart={() => setCurrentScreen("challenge")} />
@@ -76,7 +76,7 @@ export default function App() {
                 });
                 setCurrentScreen("emotion");
               }}
-              onExit={handleGameExit} // ✅ Pass proper exit handler
+              onExit={handleGameExit} //  Pass proper exit handler
             />
           </Suspense>
         )}
@@ -89,7 +89,7 @@ export default function App() {
                 setCurrentChallengeData(data);
                 setCurrentScreen("reaction");
               }}
-              onlogoutReaction={handleGameExit} // ✅ Use proper exit
+              onlogoutReaction={handleGameExit} //  Use proper exit
             />
           </Suspense>
         )}
@@ -105,7 +105,7 @@ export default function App() {
               }}
               onCompleteReaction={handleReactionComplete}
               onBackToChallenge={() => setCurrentScreen("challenge")}
-              onExit={handleGameExit} // ✅ Use proper exit
+              onExit={handleGameExit} //  Use proper exit
             />
           </Suspense>
         )}

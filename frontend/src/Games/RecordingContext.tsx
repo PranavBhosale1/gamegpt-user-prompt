@@ -56,7 +56,7 @@ export const RecordingProvider: React.FC<{ children: ReactNode }> = ({ children 
       recorder.onstart = () => setIsRecording(true);
       recorder.start();
       
-      console.log(`✅ Started ${type} recording`);
+      console.log(` Started ${type} recording`);
     } catch (error) {
       console.error("Failed to start recording:", error);
     }
@@ -92,7 +92,7 @@ export const RecordingProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
   };
 
-  // ✅ ENHANCED: Force stop everything with multiple cleanup methods
+  //  ENHANCED: Force stop everything with multiple cleanup methods
   const forceStopAndCleanup = () => {
     try {
       console.log("🚨 FORCE CLEANUP INITIATED");
@@ -137,7 +137,7 @@ export const RecordingProvider: React.FC<{ children: ReactNode }> = ({ children 
       setCurrentStream(null);
       chunksRef.current = [];
       
-      console.log("✅ ALL CLEANUP COMPLETED - Camera/Mic should be OFF");
+      console.log(" ALL CLEANUP COMPLETED - Camera/Mic should be OFF");
       
       // Method 5: Additional timeout cleanup (fallback)
       setTimeout(() => {
