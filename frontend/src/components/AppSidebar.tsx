@@ -6,7 +6,8 @@ import {
   FileText, 
   AlertTriangle,
   Target,
-  Heart
+  Heart,
+  Gamepad2
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -36,6 +37,13 @@ export function AppSidebar() {
       icon: Target, 
       description: "Interactive behavioral challenges",
       color: "text-emerald-600"
+    },
+    { 
+      title: "AI Game Creator", 
+      url: "/dynamic", 
+      icon: Gamepad2, 
+      description: "Create custom wellness games",
+      color: "text-purple-600"
     },
     { 
       title: "Emotion Dashboard", 
@@ -72,6 +80,13 @@ export function AppSidebar() {
       icon: Target, 
       description: "Interactive behavioral challenges",
       color: "text-emerald-600"
+    },
+    { 
+      title: "AI Game Creator", 
+      url: "/dynamic", 
+      icon: Gamepad2, 
+      description: "Create custom wellness games",
+      color: "text-purple-600"
     },
     // { 
     //   title: "Connect to a Therapist", 

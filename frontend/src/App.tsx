@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import { RecordingProvider } from "./Games/RecordingContext";
 import Challenge from "./pages/Challenge";
 import Index from "./Games/Index";
+import Dynamic from "./pages/Dynamic";
 
 // Import your existing main app pages
 import Emotions from "./pages/Emotions";
@@ -62,6 +63,11 @@ const App = () => (
             <Route path="/companion" element={
               <ProtectedRoute>
                 <Companion />
+              </ProtectedRoute>
+            } />
+            <Route path="/dynamic" element={
+              <ProtectedRoute>
+                <Dynamic />
               </ProtectedRoute>
             } />
             {/* 404 Handler */}
