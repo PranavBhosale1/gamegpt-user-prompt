@@ -24,7 +24,8 @@ import {
   Share2,
   RefreshCw,
   Brain,
-  Heart
+  Heart,
+  Settings
 } from 'lucide-react';
 
 interface GameRequest {
@@ -816,274 +817,241 @@ export default function Dynamic() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full mb-6 shadow-lg">
-            <Gamepad2 className="w-10 h-10 text-white" />
+      <div className="container mx-auto px-4 py-4 max-w-5xl">
+        {/* Compact Hero Section with Animations */}
+        <div className="text-center mb-8 relative">
+          <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 rounded-xl mb-4 shadow-lg transform hover:scale-110 hover:rotate-6 transition-all duration-300 group animate-bounce">
+            <Gamepad2 className="w-8 h-8 text-white group-hover:rotate-12 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-400/50 to-pink-400/50 rounded-xl blur-lg scale-125"></div>
           </div>
           
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 bg-clip-text text-transparent leading-tight">
             AI Game Creator
           </h1>
           
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            Most mental wellness platforms feel clinical or repetitive. Here, you can create your own interactive, 
-            psychology-informed game to build self-awareness, resilience, and coping skills—playfully and personally.
+          <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto animate-fade-in-up">
+            Create personalized wellness games for <span className="text-purple-600 font-semibold">self-discovery</span>, 
+            <span className="text-pink-600 font-semibold"> mindfulness</span>, and 
+            <span className="text-blue-600 font-semibold"> coping skills</span>.
           </p>
 
-          {/* Quick Stats */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full border shadow-sm">
-              <Sparkles className="w-5 h-5 text-accent" />
-              <span className="font-medium">AI-Powered</span>
+          {/* Animated Inline Stats */}
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-lg border border-purple-200 hover:scale-105 hover:shadow-md transition-all duration-300 animate-slide-in-left">
+              <Sparkles className="w-4 h-4 text-purple-500 animate-spin" style={{animationDuration: '3s'}} />
+              <span className="text-sm font-medium text-purple-600">AI-Powered</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full border shadow-sm">
-              <Target className="w-5 h-5 text-success" />
-              <span className="font-medium">Personalized</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 hover:scale-105 hover:shadow-md transition-all duration-300 animate-slide-in-up delay-150">
+              <Target className="w-4 h-4 text-blue-500" />
+              <span className="text-sm font-medium text-blue-600">Personalized</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-full border shadow-sm">
-              <Heart className="w-5 h-5 text-primary" />
-              <span className="font-medium">Wellness-Focused</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-pink-50 rounded-lg border border-pink-200 hover:scale-105 hover:shadow-md transition-all duration-300 animate-slide-in-right delay-300">
+              <Heart className="w-4 h-4 text-pink-500 animate-bounce" />
+              <span className="text-sm font-medium text-pink-600">Wellness-Focused</span>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <Card className="mb-8 shadow-lg border-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Wand2 className="w-6 h-6 text-primary" />
-              What kind of mindful or wellness game do you want to create?
-            </CardTitle>
-          </CardHeader>
+        {/* Compact Main Content in Two Columns */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+          {/* Left Column - Main Form with Animations */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50/30 hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-500 animate-fade-in-up">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-md hover:rotate-12 hover:scale-110 transition-all duration-300 ">
+                    <Wand2 className="w-4 h-4 text-white" />
+                  </div>
+                  Create Your Game
+                </CardTitle>
+              </CardHeader>
           
-          <CardContent className="space-y-6">
-            {/* Main Description */}
-            <div>
-              <Label htmlFor="description" className="text-lg font-semibold flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                Describe your mental wellness game idea *
-              </Label>
-              <Textarea
-                id="description"
-                value={gameRequest.description}
-                onChange={(e) => setGameRequest(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="e.g., 'A matching game for positive affirmations and coping skills'"
-                className="border-2 text-lg min-h-[120px] mt-3 resize-none"
-              />
-            </div>
+              <CardContent className="space-y-6">
+                {/* Main Description */}
+                <div>
+                  <Label htmlFor="description" className="text-base font-semibold flex items-center gap-2 text-gray-700 mb-2">
+                    <Brain className="w-4 h-4 text-purple-500" />
+                    Describe your game idea *
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={gameRequest.description}
+                    onChange={(e) => setGameRequest(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="e.g., 'A matching game for positive affirmations and coping skills'"
+                    className="border-2 border-gray-200 focus:border-purple-400 text-base min-h-[100px] resize-none rounded-lg bg-white"
+                    rows={4}
+                  />
+                </div>
 
-            {/* Suggestions */}
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground mb-3 block">
-                💡 Need inspiration? Try these wellness-focused ideas:
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((suggestion, index) => (
-                  <Badge
+                {/* Compact Game Type Selection with Animations */}
+                <div>
+                  <Label className="text-base font-semibold flex items-center gap-2 text-gray-700 mb-2">
+                    <Gamepad2 className="w-4 h-4 text-purple-500 animate-bounce" />
+                    Game Type (optional)
+                  </Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {gameTypes.map((type, index) => (
+                      <button
+                        key={type.value}
+                        onClick={() => setGameRequest(prev => ({ 
+                          ...prev, 
+                          gameType: prev.gameType === type.value ? undefined : type.value as GameSchema['type']
+                        }))}
+                        className={`p-3 rounded-lg border-2 text-center transition-all duration-300 hover:scale-110 hover:rotate-1 animate-fade-in-up ${
+                          gameRequest.gameType === type.value
+                            ? 'border-purple-400 bg-purple-50 shadow-lg scale-105 animate-bounce'
+                            : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
+                        }`}
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <div className="text-2xl mb-1 hover:scale-125 transition-transform duration-300">{type.icon}</div>
+                        <div className={`text-xs font-medium transition-colors duration-300 ${
+                          gameRequest.gameType === type.value ? 'text-purple-700' : 'text-gray-600'
+                        }`}>
+                          {type.label}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Settings in Grid */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-base font-semibold flex items-center gap-2 text-gray-700 mb-2">
+                      <Target className="w-4 h-4 text-purple-500" />
+                      Difficulty
+                    </Label>
+                    <Select 
+                      value={gameRequest.difficulty} 
+                      onValueChange={(value: any) => setGameRequest(prev => ({ ...prev, difficulty: value }))}
+                    >
+                      <SelectTrigger className="h-10 border-2 border-gray-200 focus:border-purple-400">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="easy">🟢 Easy</SelectItem>
+                        <SelectItem value="medium">🟡 Medium</SelectItem>
+                        <SelectItem value="hard">🔴 Hard</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-base font-semibold flex items-center gap-2 text-gray-700 mb-2">
+                      <Users className="w-4 h-4 text-purple-500" />
+                      Target Age
+                    </Label>
+                    <Input
+                      value={gameRequest.targetAge}
+                      onChange={(e) => setGameRequest(prev => ({ ...prev, targetAge: e.target.value }))}
+                      placeholder="e.g., 8-12, Adults"
+                      className="h-10 border-2 border-gray-200 focus:border-purple-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Bouncing Animated Generate Button */}
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !gameRequest.description.trim()}
+                  className="group w-full h-12 text-lg font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-2xl transition-all duration-500 border-0 relative overflow-hidden animate-bounce hover:animate-pulse"
+                >
+                  {/* Animated background wave effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  
+                  {/* Floating sparkles around button */}
+                  <div className="absolute -top-1 -left-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75" style={{ animationDelay: '0.5s' }}></div>
+                  <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75" style={{ animationDelay: '1s' }}></div>
+                  <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75" style={{ animationDelay: '1.5s' }}></div>
+                  
+                  <div className="relative z-10 flex items-center justify-center gap-3">
+                    {isGenerating ? (
+                      <>
+                        <div className="relative">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <div className="absolute inset-0 w-5 h-5 border-2 border-white/30 rounded-full"></div>
+                        </div>
+                        <span className="animate-pulse">Creating Game...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 group-hover:scale-125 group-hover:rotate-180 transition-transform duration-500" />
+                        <span className="group-hover:scale-105 transition-transform duration-300">Generate Game</span>
+                        
+                      </>
+                    )}
+                  </div>
+                </Button>
+
+                {/* Error Display */}
+                {error && (
+                  <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg text-red-700">
+                    <div className="font-semibold">Generation Failed</div>
+                    <div className="text-sm">{error}</div>
+                  </div>
+                )}
+
+                {/* Generation Status */}
+                {isGenerating && (
+                  <div className="p-4 bg-purple-50 border-2 border-purple-200 rounded-lg text-center">
+                    <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin text-purple-500" />
+                    <div className="font-semibold text-purple-700">{generationStep}</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Tips & Info with Animations */}
+          <div className="space-y-4">
+            {/* Quick Tips with Staggered Animation */}
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-blue-50 hover:shadow-xl hover:scale-105 transition-all duration-500 animate-slide-in-right">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold text-blue-700 flex items-center gap-2">
+                  <span className="text-xl animate-bounce">💡</span>
+                  Quick Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                {suggestions.slice(0, 3).map((suggestion, index) => (
+                  <div
                     key={index}
-                    variant="outline"
-                    className="cursor-pointer hover:bg-accent/10 border-2 p-2 text-xs transition-colors"
+                    className="cursor-pointer p-3 rounded-lg bg-white border border-blue-200 hover:border-blue-300 hover:shadow-md hover:scale-105 transition-all duration-300 text-sm animate-fade-in-up"
+                    style={{ animationDelay: `${(index + 1) * 200}ms` }}
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
-                  </Badge>
+                  </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Game Type Selection */}
-            <div>
-              <Label className="text-lg font-semibold mb-3 block">
-                Preferred game type (optional)
-              </Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {gameTypes.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => setGameRequest(prev => ({ 
-                      ...prev, 
-                      gameType: prev.gameType === type.value ? undefined : type.value as GameSchema['type']
-                    }))}
-                    className={`p-4 rounded-lg border-2 text-center transition-all hover:shadow-md ${
-                      gameRequest.gameType === type.value
-                        ? 'border-primary bg-primary/10 shadow-lg'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">{type.icon}</div>
-                    <div className="font-medium mb-1">{type.label}</div>
-                    <div className="text-xs text-muted-foreground">{type.description}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Settings Grid */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4" />
-                  Difficulty
-                </Label>
-                <Select 
-                  value={gameRequest.difficulty} 
-                  onValueChange={(value: any) => setGameRequest(prev => ({ ...prev, difficulty: value }))}
-                >
-                  <SelectTrigger className="border-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="easy">🟢 Easy</SelectItem>
-                    <SelectItem value="medium">🟡 Medium</SelectItem>
-                    <SelectItem value="hard">🔴 Hard</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label className="flex items-center gap-2 mb-2">
-                  <Users className="w-4 h-4" />
-                  Target Age
-                </Label>
-                <Input
-                  value={gameRequest.targetAge}
-                  onChange={(e) => setGameRequest(prev => ({ ...prev, targetAge: e.target.value }))}
-                  placeholder="e.g., 8-12, Adults"
-                  className="border-2"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="flex items-center gap-2 mb-2">
-                <BookOpen className="w-4 h-4" />
-                Wellness Goals (optional)
-              </Label>
-              <Textarea
-                value={gameRequest.learningObjectives}
-                onChange={(e) => setGameRequest(prev => ({ ...prev, learningObjectives: e.target.value }))}
-                placeholder="What should players gain for their mental wellness, self-awareness, or coping?"
-                className="border-2 resize-none"
-                rows={3}
-              />
-            </div>
-
-            {/* Error Display */}
-            {error && (
-              <div className="p-4 bg-destructive/10 border-2 border-destructive/20 rounded-lg text-destructive">
-                <div className="font-semibold">Generation Failed</div>
-                <div>{error}</div>
-              </div>
-            )}
-
-            {/* Generation Status */}
-            {isGenerating && (
-              <div className="p-6 bg-primary/10 border-2 border-primary/20 rounded-lg text-center">
-                <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
-                <div className="font-semibold text-primary mb-2">Creating Your Game</div>
-                <div className="text-primary/80">{generationStep}</div>
-              </div>
-            )}
-
-            {/* Generate Button */}
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !gameRequest.description.trim()}
-              className="w-full text-xl py-6 bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Creating Your Game...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Generate My Game
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Quick Demo Section */}
-        <Card className="shadow-md border-2 hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-bold mb-4 text-center">🎮 Quick Demo Games</h3>
-            <p className="text-sm text-muted-foreground mb-6 text-center">
-              Test any game type instantly with pre-loaded demo content
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {gameTypes.map((type) => (
-                <Button
-                  key={type.value}
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    try {
-                      const demoRequest: GameRequest = {
-                        description: `Demo ${type.label} game for testing UI functionality`,
-                        gameType: type.value as GameSchema['type'],
-                        difficulty: 'medium',
-                        targetAge: 'teens',
-                        estimatedTime: 10,
-                        learningObjectives: 'Test UI components and game interaction',
-                        theme: 'mental wellness',
-                        customRequirements: 'Include demo data for UI testing'
-                      };
-                      const demoGame = await generateGameAPI(demoRequest);
-                      setGeneratedGame(demoGame);
-                    } catch (error) {
-                      toast({
-                        title: "Demo Error",
-                        description: "Failed to load demo game",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="border-2 hover:bg-secondary text-xs p-3 h-auto flex flex-col items-center gap-1"
-                >
-                  <span className="text-lg">{type.icon}</span>
-                  <span>{type.label}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Info Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="text-center shadow-md border-2 hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="font-bold mb-2 text-lg">Personalized Wellness</h3>
-              <p className="text-sm text-muted-foreground">
-                Every game is tailored to your unique self-awareness and growth journey
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center shadow-md border-2 hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="font-bold mb-2 text-lg">Instant Reflection</h3>
-              <p className="text-sm text-muted-foreground">
-                Get your custom wellness game in seconds, ready to play and reflect
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center shadow-md border-2 hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="text-4xl mb-4">🧠</div>
-              <h3 className="font-bold mb-2 text-lg">Mindful & Engaging</h3>
-              <p className="text-sm text-muted-foreground">
-                Designed to support mindfulness, resilience, and emotional skills—while keeping you engaged
-              </p>
-            </CardContent>
-          </Card>
+            {/* Benefits with Bounce Animation */}
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-green-50 hover:shadow-xl hover:scale-105 transition-all duration-500 animate-slide-in-right delay-300">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold text-green-700 flex items-center gap-2">
+                  <span className="text-xl animate-spin" style={{ animationDuration: '3s' }}>🎯</span>
+                  Benefits
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-2">
+                <div className="flex items-center gap-2 text-sm text-green-600 hover:scale-105 transition-transform duration-300 animate-slide-in-left">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  Personalized to your needs
+                </div>
+                <div className="flex items-center gap-2 text-sm text-green-600 hover:scale-105 transition-transform duration-300 animate-slide-in-left delay-150">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></span>
+                  Created in seconds
+                </div>
+                <div className="flex items-center gap-2 text-sm text-green-600 hover:scale-105 transition-transform duration-300 animate-slide-in-left delay-300">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></span>
+                  Science-backed wellness focus
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>

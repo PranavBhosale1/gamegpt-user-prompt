@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import axios from "axios";
+import axios from "../pages/axiosInstance";
 
 interface Message {
   id: string;

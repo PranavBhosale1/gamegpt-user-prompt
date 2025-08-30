@@ -1,5 +1,5 @@
 const environment = {
-  apiUrl: 'http://localhost:3000' // change to your actual Node API base
+  apiUrl: 'https://backend-new-game-gpt-backup.globians.in'
 };
 
 export default environment;
