@@ -1,15 +1,5 @@
-# GameGPT Backend - Gemini Edition
+# GameGPT Backend 
 
-A modular FastAPI backend that replicates the n8n workflow logic for AI-powered therapeutic game generation using Google Gemini.
-
-## Architecture
-
-This backend converts the n8n workflow into a modular Python FastAPI application:
-
-1. **Webhook** (n8n) → **FastAPI endpoint** (`/generate`)
-2. **Edit Fields** (n8n) → **PromptBuilder service**
-3. **Basic LLM Chain** (n8n) → **LLMService** (Gemini only)
-4. **Code** (n8n) → **ResponseProcessor service**
 
 ## Project Structure
 
