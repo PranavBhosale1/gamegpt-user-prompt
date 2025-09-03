@@ -27,15 +27,26 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
 
+  // Create left and right items from pairs for display
+  const leftItems = content.pairs.map(pair => ({
+    id: `left-${pair.id}`,
+    content: pair.left,
+    pairId: pair.id
+  }));
+
+  const rightItems = content.pairs.map(pair => ({
+    id: `right-${pair.id}`,
+    content: pair.right,
+    pairId: pair.id
+  }));
+
   const checkCorrectness = () => {
     let correctCount = 0;
-    content.leftItems.forEach(leftItem => {
-      const matchedRightId = matches[leftItem.id];
-      if (matchedRightId) {
-        const rightItem = content.rightItems.find(r => r.id === matchedRightId);
-        if (rightItem && rightItem.matchId === leftItem.matchId) {
-          correctCount++;
-        }
+    Object.entries(matches).forEach(([leftId, rightId]) => {
+      const leftItem = leftItems.find(item => item.id === leftId);
+      const rightItem = rightItems.find(item => item.id === rightId);
+      if (leftItem && rightItem && leftItem.pairId === rightItem.pairId) {
+        correctCount++;
       }
     });
     return correctCount;
@@ -43,8 +54,8 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
 
   const calculateScore = () => {
     const correctCount = checkCorrectness();
-    const totalPairs = content.leftItems.length;
-    return Math.floor((correctCount / totalPairs) * 100); // Use 100 as default max score
+    const totalPairs = content.pairs.length;
+    return Math.floor((correctCount / totalPairs) * 100);
   };
 
   const handleLeftSelect = (leftId: string) => {
@@ -78,6 +89,18 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
       setMatches(newMatches);
       setSelectedRight(null);
       updateScore(newMatches);
+    } else {
+      setSelectedRight(rightId);
+      if (selectedLeft) {
+        // Create match
+        const newMatches = { ...matches, [selectedLeft]: rightId };
+        setMatches(newMatches);
+        setSelectedLeft(null);
+        setSelectedRight(null);
+        updateScore(newMatches);
+      }
+    }
+  };
     } else {
       setSelectedRight(rightId);
       if (selectedLeft) {

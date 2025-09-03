@@ -24,7 +24,7 @@ import QuizRenderer from './renderers/QuizRenderer';
 import { DragDropRenderer } from './renderers/DragDropRenderer';
 import { MemoryMatchRenderer } from './renderers/MemoryMatchRenderer';
 import { SortingRenderer } from './SortingRenderer';
-import { MatchingRenderer } from './MatchingRenderer';
+import { MatchingRenderer } from './MatchingRenderer_Simple';
 import { AnxietyAdventureRenderer } from './renderers/AnxietyAdventureRenderer';
 import { WordPuzzleRenderer } from './WordPuzzleRenderer';
 import { StorySequenceRenderer } from './StorySequenceRenderer';

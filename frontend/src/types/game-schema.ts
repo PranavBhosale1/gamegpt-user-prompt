@@ -165,17 +165,15 @@ export interface SortingCategory {
 }
 
 export interface MatchingContent {
-  leftItems: MatchingItem[];
-  rightItems: MatchingItem[];
+  pairs: MatchingPair[];
   instructions: string;
 }
 
-export interface MatchingItem {
+export interface MatchingPair {
   id: string;
-  content: string;
-  image?: string;
-  matchId: string;
-  explanation?: string; // Explanation for why this item matches with its pair
+  left: string;
+  right: string;
+  explanation: string; // Explanation for why these items match
 }
 
 export interface StorySequenceContent {

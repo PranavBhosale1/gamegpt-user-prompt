@@ -140,19 +140,17 @@ class SortingContent(BaseModel):
 
 
 # Matching Game Content Models
-class MatchingItem(BaseModel):
-    """Matching item model"""
+class MatchingPair(BaseModel):
+    """Matching pair model"""
     id: str
-    content: str
-    image: Optional[str] = None
-    matchId: str
+    left: str
+    right: str
     explanation: str
 
 
 class MatchingContent(BaseModel):
     """Matching game content"""
-    leftItems: List[MatchingItem]
-    rightItems: List[MatchingItem]
+    pairs: List[MatchingPair]
     instructions: str
 
 

@@ -24,6 +24,7 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
   const [isComplete, setIsComplete] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const calculateScore = () => {
     let correctCount = 0;
@@ -36,6 +37,8 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
   };
 
   const moveEvent = (index: number, direction: 'up' | 'down') => {
+    if (isSubmitted) return; // Prevent moves after submission
+    
     const newEvents = [...sequencedEvents];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     
@@ -43,10 +46,21 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
       [newEvents[index], newEvents[targetIndex]] = [newEvents[targetIndex], newEvents[index]];
       setSequencedEvents(newEvents);
       
-      const newScore = calculateScore();
-      setScore(newScore);
-      setGameState(prev => ({ ...prev, score: newScore }));
+      // Only update score after submission
+      if (isSubmitted) {
+        const newScore = calculateScore();
+        setScore(newScore);
+        setGameState(prev => ({ ...prev, score: newScore }));
+      }
     }
+  };
+
+  const handleSubmit = () => {
+    setIsSubmitted(true);
+    const finalScore = calculateScore();
+    setScore(finalScore);
+    setGameState(prev => ({ ...prev, score: finalScore }));
+    setShowResults(true);
   };
 
   const handleComplete = () => {
@@ -59,7 +73,6 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
     });
     
     setIsComplete(true);
-    setShowResults(true);
     
     const results: GameResults = {
       score: finalScore,
@@ -78,6 +91,7 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
     setIsComplete(false);
     setScore(0);
     setShowResults(false);
+    setIsSubmitted(false);
     setGameState(prev => ({ ...prev, score: 0 }));
   };
 
@@ -105,13 +119,13 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <Badge variant="outline">
-                Score: {score}/{gameSchema.scoring.maxScore}
+                Score: {isSubmitted ? score : '--'}/{gameSchema.scoring.maxScore}
               </Badge>
               <Badge variant="outline">
-                Correct: {sequencedEvents.filter((event, index) => event.order === index + 1).length}/{content.events.length}
+                Correct: {isSubmitted ? sequencedEvents.filter((event, index) => event.order === index + 1).length : '--'}/{content.events.length}
               </Badge>
               <Badge variant="outline">
-                Progress: {Math.round((sequencedEvents.filter((event, index) => event.order === index + 1).length / content.events.length) * 100)}%
+                Progress: {Math.round((sequencedEvents.length / content.events.length) * 100)}%
               </Badge>
             </div>
             <Button variant="outline" size="sm" onClick={handleReset}>
@@ -119,7 +133,7 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
               Shuffle Again
             </Button>
           </div>
-          <Progress value={(sequencedEvents.filter((event, index) => event.order === index + 1).length / content.events.length) * 100} className="h-3" />
+          <Progress value={100} className="h-3" />
         </CardContent>
       </Card>
 
@@ -138,12 +152,10 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
               <div
                 key={event.id}
                 className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                  showResults
+                  isSubmitted
                     ? isCorrect 
                       ? 'border-green-500 bg-green-50' 
                       : 'border-red-500 bg-red-50'
-                    : isCorrect
-                    ? 'border-green-500 bg-green-50'
                     : 'border-border bg-background hover:bg-muted'
                 }`}
               >
@@ -153,7 +165,7 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => moveEvent(index, 'up')}
-                    disabled={index === 0 || isComplete}
+                    disabled={index === 0 || isSubmitted}
                     className="h-8 w-8 p-0"
                   >
                     <ChevronUp className="w-4 h-4" />
@@ -162,7 +174,7 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => moveEvent(index, 'down')}
-                    disabled={index === sequencedEvents.length - 1 || isComplete}
+                    disabled={index === sequencedEvents.length - 1 || isSubmitted}
                     className="h-8 w-8 p-0"
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -171,9 +183,9 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
 
                 {/* Position Number */}
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold ${
-                  showResults
+                  isSubmitted
                     ? isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    : isCorrect ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
+                    : 'bg-muted text-muted-foreground'
                 }`}>
                   {index + 1}
                 </div>
@@ -198,18 +210,14 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
 
                 {/* Status Icon */}
                 <div className="flex items-center">
-                  {showResults ? (
+                  {isSubmitted ? (
                     isCorrect ? (
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
                     ) : (
                       <X className="w-5 h-5 text-red-600" />
                     )
-                  ) : isCorrect ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
-                    <Badge variant="outline" className="text-xs">
-                      Should be #{event.order}
-                    </Badge>
+                    <div className="w-5 h-5"></div>
                   )}
                 </div>
               </div>
@@ -218,19 +226,35 @@ export const StorySequenceRenderer: React.FC<StorySequenceRendererProps> = ({
         </CardContent>
       </Card>
 
-      {/* Completion Button */}
+      {/* Action Buttons */}
       {!isComplete && (
         <Card className="border-2">
           <CardContent className="p-6 text-center">
-            <Button 
-              onClick={handleComplete}
-              className="w-full"
-            >
-              Complete Story Sequence
-            </Button>
-            <p className="text-sm text-muted-foreground mt-2">
-              Check your sequence and see the results
-            </p>
+            {!isSubmitted ? (
+              <>
+                <Button 
+                  onClick={handleSubmit}
+                  className="w-full"
+                >
+                  Submit Sequence
+                </Button>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Submit your arrangement to see the results
+                </p>
+              </>
+            ) : (
+              <>
+                <Button 
+                  onClick={handleComplete}
+                  className="w-full"
+                >
+                  Complete Story Sequence
+                </Button>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Finish the game and see your final score
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       )}

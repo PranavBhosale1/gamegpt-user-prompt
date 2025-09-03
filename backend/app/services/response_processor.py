@@ -247,7 +247,7 @@ class ResponseProcessor:
     
     def _validate_matching_content(self, content: Dict[str, Any]) -> None:
         """Validate matching game content"""
-        required_fields = ['leftItems', 'rightItems', 'instructions']
+        required_fields = ['pairs', 'instructions']
         for field in required_fields:
             if field not in content:
                 raise ValueError(f"Matching content missing field: {field}")

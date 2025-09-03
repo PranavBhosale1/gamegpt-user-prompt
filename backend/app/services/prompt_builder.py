@@ -103,7 +103,7 @@ REQUIRED JSON OUTPUT STRUCTURE
 
 Return this EXACT JSON structure with NO additional formatting:
 
-{{ "id": "game-[YYYYMMDD]-[4-digit-random]", "title": "[Engaging title, max 60 chars]", "description": "[Clear description of what players will learn]", "type": "[selected-game-type]", "difficulty": "[easy|medium|hard]", "category": "[mental-wellness|coping-skills|emotional-intelligence|mindfulness|anxiety-management|depression-support|stress-reduction|self-care|cognitive-behavioral|interpersonal-skills]", "estimatedTime": [5-30], "config": {{ "maxAttempts": [1-5 or null], "timeLimit": [300-1800 or null], "showProgress": true, "allowRetry": true, "shuffleOptions": [true|false], "showHints": true, "autoNext": false }}, "content": {{ [GAME-TYPE-SPECIFIC CONTENT - see structures below] }}, "scoring": {{ "maxScore": [50-200], "pointsPerCorrect": [5-25], "pointsPerIncorrect": [0 to -10], "bonusForSpeed": [0-15], "bonusForStreak": [0-20] }}, "ui": {{ "theme": "[default|colorful|minimal|dark]", "layout": "[grid|list|carousel|scattered]", "animations": true, "sounds": false, "particles": [true|false] }}, "generatedAt": "[ISO 8601 timestamp]", "version": "1.0", "theme": "[therapeutic theme or wellness topic]" }}
+{{ "id": "game-[YYYYMMDD]-[4-digit-random]", "title": "[Engaging title, max 60 chars]", "description": "[Clear description of what players will learn]", "type": "[selected-game-type]", "difficulty": "[easy|medium|hard]", "category": "[mental-wellness|coping-skills|emotional-intelligence|mindfulness|anxiety-management|depression-support|stress-reduction|self-care|cognitive-behavioral|interpersonal-skills|any other suitable then choose it]", "estimatedTime": [5-30], "config": {{ "maxAttempts": [1-5 or null], "timeLimit": [300-1800 or null], "showProgress": true, "allowRetry": true, "shuffleOptions": [true|false], "showHints": true, "autoNext": false }}, "content": {{ [GAME-TYPE-SPECIFIC CONTENT - see structures below] }}, "scoring": {{ "maxScore": [50-200], "pointsPerCorrect": [5-25], "pointsPerIncorrect": [0 to -10], "bonusForSpeed": [0-15], "bonusForStreak": [0-20] }}, "ui": {{ "theme": "[default|colorful|minimal|dark]", "layout": "[grid|list|carousel|scattered]", "animations": true, "sounds": false, "particles": [true|false] }}, "generatedAt": "[ISO 8601 timestamp]", "version": "1.0", "theme": "[therapeutic theme or wellness topic]" }}
 
 CONTENT STRUCTURES BY GAME TYPE
 
@@ -125,7 +125,7 @@ SORTING CONTENT:
 
 MATCHING CONTENT:
 
-"content": {{ "leftItems": [ {{ "id": "left1", "content": "[Left side item - problem/trigger]", "image": "[optional image]", "matchId": "match1", "explanation": "[Why this pairing helps - therapeutic insight]" }} ], "rightItems": [ {{ "id": "right1", "content": "[Right side item - solution/coping strategy]", "image": "[optional image]", "matchId": "match1", "explanation": "[Additional context for this solution]" }} ], "instructions": "[Matching instructions with therapeutic focus]" }}
+"content": {{ "pairs": [ {{ "id": "pair1", "left": "[Left side item - problem/trigger/concept]", "right": "[Right side item - solution/coping strategy/related concept]", "explanation": "[Why these match - therapeutic insight]" }} ], "instructions": "[Matching instructions with therapeutic focus]" }}
 
 STORY-SEQUENCE CONTENT:
 

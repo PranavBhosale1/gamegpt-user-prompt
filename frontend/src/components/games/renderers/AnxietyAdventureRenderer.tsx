@@ -28,7 +28,7 @@ export const AnxietyAdventureRenderer: React.FC<AnxietyAdventureRendererProps> =
   const [showOutcome, setShowOutcome] = useState(false);
   const [journeyComplete, setJourneyComplete] = useState(false);
 
-  const currentScenario = content.scenarios.find(s => s.id === currentScenarioId);
+  const currentScenario = content.scenarios[currentScenarioId];
 
   if (!currentScenario) {
     return (
@@ -67,7 +67,7 @@ export const AnxietyAdventureRenderer: React.FC<AnxietyAdventureRendererProps> =
 
     // Handle next scenario or completion
     setTimeout(() => {
-      if (choice.nextScenario && content.scenarios.find(s => s.id === choice.nextScenario)) {
+      if (choice.nextScenario && content.scenarios[choice.nextScenario]) {
         setCurrentScenarioId(choice.nextScenario);
         setSelectedChoice(null);
         setShowOutcome(false);
