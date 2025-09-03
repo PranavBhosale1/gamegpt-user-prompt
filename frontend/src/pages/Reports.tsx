@@ -61,7 +61,7 @@ const Reports = () => {
   const [weekly, setWeekly] = useState<Summary | null>(null);
   const [monthly, setMonthly] = useState<Summary | null>(null);
 
-  const base = import.meta.env.VITE_API_BASE_URL || "https://backend-new-game-gpt-backup.globians.in";
+  const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   // Existing PDF downloaders (weekly/monthly) – unchanged if you already added programmatic download
   const downloadWeekly = async () => {

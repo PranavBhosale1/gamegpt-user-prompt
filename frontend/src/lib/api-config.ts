@@ -4,16 +4,16 @@
 
 // Backend API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://backend-new-game-gpt-backup.globians.in',
+  BASE_URL:  'http://localhost:8000',
   
   ENDPOINTS: {
     GAMES: {
-      GENERATE: 'webhook/generate',
-      STATUS: 'games/status',
+      GENERATE: '/games/generate',
+      STATUS: '/games/status',
       STATS: '/stats'
     },
-    HEALTH: 'health',
-    STATS: 'stats'
+    HEALTH: '/health',
+    STATS: '/stats'
   }
 } as const;
 
@@ -21,11 +21,11 @@ export const API_CONFIG = {
 export const API_URLS = {
   BASE: API_CONFIG.BASE_URL,
   
-  HEALTH: `${API_CONFIG.BASE_URL}/${API_CONFIG.ENDPOINTS.HEALTH}`,
+  HEALTH: `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HEALTH}`,
   GAMES: {
     GENERATE: `${API_CONFIG.BASE_URL}/${API_CONFIG.ENDPOINTS.GAMES.GENERATE}`,
-    STATUS: (jobId: string) => `${API_CONFIG.BASE_URL}/${API_CONFIG.ENDPOINTS.GAMES.STATUS}/${jobId}`,
-    STATS: `${API_CONFIG.BASE_URL}/${API_CONFIG.ENDPOINTS.STATS}`
+    STATUS: (jobId: string) => `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GAMES.STATUS}/${jobId}`,
+    STATS: `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STATS}`
   }
 } as const;
 
