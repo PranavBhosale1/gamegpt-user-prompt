@@ -222,8 +222,7 @@ export const PuzzleAssemblyRenderer: React.FC<PuzzleAssemblyRendererProps> = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="inline-grid gap-2 p-4 bg-muted rounded-lg mx-auto"
-                style={{ gridTemplateColumns: `repeat(${content.gridSize}, minmax(0, 1fr))` }}
+                className={`inline-grid gap-2 p-4 bg-muted rounded-lg mx-auto grid-cols-${content.gridSize}`}
               >
                 {puzzleGrid.map((row, rowIndex) =>
                   row.map((piece, colIndex) => (

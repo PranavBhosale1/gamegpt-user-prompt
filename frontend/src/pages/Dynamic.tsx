@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Layout } from '@/components/Layout';
 import { DynamicGameRenderer } from '@/components/games/DynamicGameRenderer';
 import { GameSchema } from '@/types/game-schema';
+import { useGameGeneration } from '@/hooks/useGameGeneration';
+import { GameRequest } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Loader2, 
   Wand2, 
-  Sparkles, 
   Clock, 
   Target, 
   Users, 
@@ -25,78 +26,13 @@ import {
   RefreshCw,
   Brain,
   Heart,
-  Settings
+  Settings,
+  Sparkles
 } from 'lucide-react';
-
-interface GameRequest {
-  description: string;
-  gameType?: GameSchema['type'];
-  difficulty: 'easy' | 'medium' | 'hard';
-  targetAge: string;
-  estimatedTime: number;
-  learningObjectives: string;
-  theme: string;
-  customRequirements: string;
-}
-
-// Real API function - sends request to webhook endpoint
-const generateGameAPI = async (payload: GameRequest): Promise<GameSchema> => {
-  try {
-    console.log('Sending request to webhook:', payload);
-    
-    // Convert complex GameRequest to simple prompt string that backend expects
-    let prompt = `Create a ${payload.gameType || 'therapeutic'} game: ${payload.description}`;
-    
-    // Add additional context to the prompt
-    if (payload.difficulty) {
-      prompt += ` (Difficulty: ${payload.difficulty})`;
-    }
-    if (payload.targetAge) {
-      prompt += ` (Target age: ${payload.targetAge})`;
-    }
-    if (payload.estimatedTime) {
-      prompt += ` (Estimated time: ${payload.estimatedTime} minutes)`;
-    }
-    if (payload.theme) {
-      prompt += ` (Theme: ${payload.theme})`;
-    }
-    if (payload.learningObjectives) {
-      prompt += ` (Learning objectives: ${payload.learningObjectives})`;
-    }
-    if (payload.customRequirements) {
-      prompt += ` (Special requirements: ${payload.customRequirements})`;
-    }
-    
-    // Send the request in the format the backend expects
-    const requestBody = { prompt };
-    console.log('Sending prompt to backend:', requestBody);
-    
-    const response = await fetch('http://localhost:8000/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-    }
-
-    const gameSchema: GameSchema = await response.json();
-    console.log('Received game schema:', gameSchema);
-    return gameSchema;
-  } catch (error) {
-    console.error('API call failed:', error);
-    
-    // Re-throw the error to be handled by the calling function
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    throw new Error(`Failed to generate game: ${errorMessage}`);
-  }
-};
 
 export default function Dynamic() {
   const { toast } = useToast();
+  
   const [gameRequest, setGameRequest] = useState<GameRequest>({
     description: '',
     difficulty: 'medium',
@@ -107,10 +43,15 @@ export default function Dynamic() {
     customRequirements: ''
   });
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedGame, setGeneratedGame] = useState<GameSchema | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [generationStep, setGenerationStep] = useState<string>('');
+  const {
+    generateGame,
+    generatedGame,
+    isGenerating,
+    error,
+    generationStep,
+    clearError,
+    reset
+  } = useGameGeneration();
 
   const gameTypes = [
     { value: 'quiz', label: 'Quiz', description: 'Multiple choice and knowledge testing', icon: '🧠' },
@@ -140,46 +81,10 @@ export default function Dynamic() {
 
   const handleGenerate = async () => {
     if (!gameRequest.description.trim()) {
-      setError('Please describe what kind of game you want to create');
       return;
     }
-
-    setIsGenerating(true);
-    setError(null);
-    setGenerationStep('Analyzing your request...');
-
-    try {
-      // Step 1: Analyze the request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setGenerationStep('Generating game content with AI...');
-
-      // Step 2: Generate game
-      const gameSchema = await generateGameAPI(gameRequest);
-
-      // Step 3: Finalize
-      setGenerationStep('Finalizing your game...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setGeneratedGame(gameSchema);
-      setGenerationStep('');
-      
-      toast({
-        title: "Game Created Successfully! 🎮",
-        description: "Your custom wellness game is ready to play."
-      });
-
-    } catch (err) {
-      console.error('Game generation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate game. Please try again.');
-      setGenerationStep('');
-      toast({
-        title: "Generation Failed",
-        description: "Please try again with a different description.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+    
+    await generateGame(gameRequest);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -220,12 +125,7 @@ export default function Dynamic() {
   };
 
   const handleRegenerate = () => {
-    setGeneratedGame(null);
-    setError(null);
-    toast({
-      title: "Ready to Create Again! ✨",
-      description: "Make any changes and generate a new game."
-    });
+    reset();
   };
 
   if (generatedGame) {
@@ -236,7 +136,7 @@ export default function Dynamic() {
           <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
             <Button
               variant="outline"
-              onClick={() => setGeneratedGame(null)}
+              onClick={reset}
               className="border-2 hover:bg-secondary"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />

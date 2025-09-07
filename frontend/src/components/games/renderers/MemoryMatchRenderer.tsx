@@ -216,31 +216,22 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
       <Card className="border-2">
         <CardContent className="p-6">
           <div 
-            className="grid gap-4 justify-center"
-            style={{ 
-              gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
-              maxWidth: `${gridCols * 160}px`,
-              margin: '0 auto'
-            }}
+            className={`grid gap-4 justify-center grid-cols-${gridCols} max-w-fit mx-auto`}
           >
             {cards.map((card) => (
               <div
                 key={card.id}
                 onClick={() => handleCardClick(card.id)}
                 className={`
-                  relative h-32 w-32 cursor-pointer transition-all duration-300 transform
-                  ${card.isFlipped || card.isMatched ? 'rotate-y-180' : 'hover:scale-105'}
-                  ${selectedCards.includes(card.id) ? 'ring-4 ring-primary ring-opacity-50' : ''}
+                  relative h-32 w-32 cursor-pointer transition-all duration-200
+                  ${card.isFlipped || card.isMatched ? 'rotate-y-180' : ''}
+                  ${selectedCards.includes(card.id) ? 'ring-2 ring-primary' : ''}
                 `}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  perspective: '1000px'
-                }}
               >
                 {/* Card Back */}
                 <div className={`
                   absolute inset-0 w-full h-full rounded-lg border-2 flex items-center justify-center
-                  transition-opacity duration-300 bg-gradient-to-br from-primary to-accent text-white
+                  transition-opacity duration-300 bg-primary text-primary-foreground
                   ${card.isFlipped || card.isMatched ? 'opacity-0' : 'opacity-100'}
                 `}>
                   <div className="text-center">

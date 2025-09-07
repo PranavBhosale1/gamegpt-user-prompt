@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import logging
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import httpx
@@ -19,11 +19,15 @@ import os
 
 # Import custom modules
 from app.models.game_schemas import GameGenerationRequest, GameSchema
-from app.services.prompt_builder import PromptBuilder
-from app.services.llm_service import LLMService
-from app.services.response_processor import ResponseProcessor
+from app.core.container import get_service_container, ServiceContainer
 from app.core.config import get_settings
 from app.core.logging_config import setup_logging
+from app.core.exceptions import (
+    handle_service_error, 
+    handle_validation_error, 
+    handle_external_service_error,
+    ErrorCode
+)
 
 # Load environment variables
 load_dotenv()
@@ -53,10 +57,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize services
-prompt_builder = PromptBuilder()
-llm_service = LLMService()
-response_processor = ResponseProcessor()
+# Dependency injection for services
+def get_services() -> ServiceContainer:
+    """Dependency injection for service container"""
+    return get_service_container()
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    logger.info("Starting GameGPT Backend API...")
+    container = get_service_container()
+    container.initialize()
+    logger.info("Service container initialized successfully")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info("Shutting down GameGPT Backend API...")
+    container = get_service_container()
+    container.shutdown()
+    logger.info("Shutdown complete")
 
 
 @app.get("/")
@@ -71,21 +93,25 @@ async def root():
 
 
 @app.get("/health")
-async def health_check():
-    """Detailed health check"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "services": {
-            "llm": await llm_service.health_check(),
-            "prompt_builder": prompt_builder.health_check(),
-            "response_processor": response_processor.health_check()
+async def health_check(services: ServiceContainer = Depends(get_services)):
+    """Detailed health check with dependency injection"""
+    try:
+        health_status = await services.health_check_all()
+        return health_status
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
         }
-    }
 
 
 @app.post("/generate", response_model=GameSchema)
-async def generate_game(request: GameGenerationRequest):
+async def generate_game(
+    request: GameGenerationRequest,
+    services: ServiceContainer = Depends(get_services)
+):
     """
     Main game generation endpoint - equivalent to n8n workflow
     
@@ -100,29 +126,48 @@ async def generate_game(request: GameGenerationRequest):
         
         # Step 1: Build the full therapeutic prompt (equivalent to Edit Fields node)
         logger.info("Building therapeutic prompt...")
-        full_prompt = prompt_builder.build_full_prompt(request.prompt)
+        try:
+            full_prompt = services.get_prompt_builder().build_full_prompt(request.prompt)
+        except Exception as e:
+            raise handle_service_error(e, "prompt_builder", "build_full_prompt")
         
         # Step 2: Process through LLM (equivalent to Basic LLM Chain node)
         logger.info("Processing through LLM...")
-        raw_response = await llm_service.generate_response(full_prompt)
+        try:
+            raw_response = await services.get_llm_service().generate_response(full_prompt)
+        except Exception as e:
+            raise handle_external_service_error(e, "gemini", getattr(e, 'status_code', None))
         
         # Step 3: Clean and parse response (equivalent to Code node)
         logger.info("Processing LLM response...")
-        game_schema = response_processor.process_response(raw_response)
+        try:
+            game_schema = services.get_response_processor().process_response(raw_response)
+        except Exception as e:
+            raise handle_service_error(e, "response_processor", "process_response")
         
         logger.info(f"Successfully generated game: {game_schema.id}")
         return game_schema
         
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        logger.error(f"Error generating game: {str(e)}")
+        logger.error(f"Unexpected error generating game: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to generate game: {str(e)}"
+            detail={
+                "code": ErrorCode.INTERNAL_ERROR.value,
+                "message": "Internal server error during game generation",
+                "details": {"error": str(e)}
+            }
         )
 
 
 @app.post("/generate/debug")
-async def generate_game_debug(request: GameGenerationRequest):
+async def generate_game_debug(
+    request: GameGenerationRequest,
+    services: ServiceContainer = Depends(get_services)
+):
     """
     Debug endpoint that returns intermediate steps
     """
@@ -130,13 +175,22 @@ async def generate_game_debug(request: GameGenerationRequest):
         logger.info(f"Debug generation request: {request.prompt[:100]}...")
         
         # Step 1: Build prompt
-        full_prompt = prompt_builder.build_full_prompt(request.prompt)
+        try:
+            full_prompt = services.get_prompt_builder().build_full_prompt(request.prompt)
+        except Exception as e:
+            raise handle_service_error(e, "prompt_builder", "build_full_prompt")
         
         # Step 2: Get LLM response
-        raw_response = await llm_service.generate_response(full_prompt)
+        try:
+            raw_response = await services.get_llm_service().generate_response(full_prompt)
+        except Exception as e:
+            raise handle_external_service_error(e, "gemini", getattr(e, 'status_code', None))
         
         # Step 3: Process response
-        game_schema = response_processor.process_response(raw_response)
+        try:
+            game_schema = services.get_response_processor().process_response(raw_response)
+        except Exception as e:
+            raise handle_service_error(e, "response_processor", "process_response")
         
         return {
             "request": request.dict(),
@@ -145,11 +199,17 @@ async def generate_game_debug(request: GameGenerationRequest):
             "final_game": game_schema.dict()
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Debug generation error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Debug generation failed: {str(e)}"
+            detail={
+                "code": ErrorCode.INTERNAL_ERROR.value,
+                "message": "Debug generation failed",
+                "details": {"error": str(e)}
+            }
         )
 
 

@@ -249,7 +249,7 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
           <CardContent className="space-y-6">
             {/* Score Display */}
             <div className="text-center">
-              <div className="text-6xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <div className="text-6xl font-bold mb-2 text-primary">
                 {results.score}/{results.maxScore}
               </div>
               <Badge className={scoreBadge.color}>

@@ -379,7 +379,7 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
             <div className="flex justify-center gap-4">
               <Button
                 onClick={handleComplete}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white"
                 size="lg"
               >
                 {showResults ? 'Continue' : 'Complete Game'}

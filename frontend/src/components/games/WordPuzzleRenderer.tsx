@@ -395,8 +395,7 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
             <CardContent>
               <div className="flex justify-center">
                 <div 
-                  className="inline-grid gap-1 p-4 bg-muted rounded-lg"
-                  style={{ gridTemplateColumns: `repeat(${content.gridSize}, minmax(0, 1fr))` }}
+                  className={`inline-grid gap-1 p-4 bg-muted rounded-lg grid-cols-${content.gridSize}`}
                   onMouseLeave={() => {
                     if (isSelecting) {
                       setIsSelecting(false);
