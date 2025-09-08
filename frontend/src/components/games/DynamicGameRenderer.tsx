@@ -19,18 +19,17 @@ import {
 } from 'lucide-react';
 
 // Import game renderers directly
-// import QuizRenderer from './renderers/QuizRenderer';
 import QuizRenderer from './renderers/QuizRenderer';
 import { DragDropRenderer } from './renderers/DragDropRenderer';
 import { MemoryMatchRenderer } from './renderers/MemoryMatchRenderer';
-import { SortingRenderer } from './SortingRenderer';
-import { MatchingRenderer } from './MatchingRenderer_Simple';
+import { SortingRenderer } from './renderers/SortingRenderer';
+import { MatchingRenderer } from './renderers/MatchingRenderer';
 import { AnxietyAdventureRenderer } from './renderers/AnxietyAdventureRenderer';
-import { WordPuzzleRenderer } from './WordPuzzleRenderer';
-import { StorySequenceRenderer } from './StorySequenceRenderer';
-import { FillBlankRenderer } from './FillBlankRenderer';
-import { CardFlipRenderer } from './CardFlipRenderer';
-import { PuzzleAssemblyRenderer } from './PuzzleAssemblyRenderer';
+import { WordPuzzleRenderer } from './renderers/WordPuzzleRenderer';
+import { StorySequenceRenderer } from './renderers/StorySequenceRenderer';
+import { FillBlankRenderer } from './renderers/FillBlankRenderer';
+import { CardFlipRenderer } from './renderers/CardFlipRenderer';
+import { PuzzleAssemblyRenderer } from './renderers/PuzzleAssemblyRenderer';
 
 interface DynamicGameRendererProps {
   gameSchema: GameSchema;
