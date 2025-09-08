@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { GameSchema, GameState, GameResults, FillBlankContent, FillBlank } from '@/types/game-schema';
+import { GameSchema, GameState, GameResults, FillBlankContent, BlankItem } from '@/types/game-schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { CheckCircle2, X, Lightbulb, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface FillBlankRendererProps {
   gameSchema: GameSchema;
@@ -21,6 +22,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
   onComplete
 }) => {
   const content = gameSchema.content as FillBlankContent;
+  const { toast } = useToast();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showHints, setShowHints] = useState<Record<string, boolean>>({});
   const [isComplete, setIsComplete] = useState(false);
@@ -63,6 +65,22 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
     const newAnswers = { ...answers, [blankId]: value };
     setAnswers(newAnswers);
     
+    // Find the blank to check if answer is correct
+    const blank = content.passages
+      .flatMap(passage => passage.blanks)
+      .find(b => b.id === blankId);
+    
+    if (blank && value.trim()) {
+      const isCorrect = value.toLowerCase().trim() === blank.correctAnswer.toLowerCase().trim();
+      if (isCorrect) {
+        toast({
+          title: "Correct! 🎉",
+          description: `Great job! "${blank.correctAnswer}" is the right answer.`,
+          duration: 2000,
+        });
+      }
+    }
+    
     const newScore = calculateScore();
     setScore(newScore);
     setGameState(prev => ({ ...prev, score: newScore }));
@@ -79,6 +97,21 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
     
     setIsComplete(true);
     setShowResults(true);
+    
+    // Show completion toast
+    if (correctCount === totalBlanks) {
+      toast({
+        title: "Perfect Score! 🎉",
+        description: `Congratulations! You got all ${totalBlanks} answers correct!`,
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "Game Complete! 📚",
+        description: `You got ${correctCount} out of ${totalBlanks} answers correct.`,
+        duration: 3000,
+      });
+    }
     
     const results: GameResults = {
       score: finalScore,
@@ -101,21 +134,31 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
     setGameState(prev => ({ ...prev, score: 0 }));
   };
 
-  const isBlankCorrect = (blank: FillBlank) => {
+  const isBlankCorrect = (blank: BlankItem) => {
     return answers[blank.id]?.toLowerCase().trim() === blank.correctAnswer.toLowerCase().trim();
   };
 
   const allBlanksAnswered = () => {
-    const totalBlanks = getTotalBlanks();
-    const answeredBlanks = Object.keys(answers).filter(key => answers[key]?.trim()).length;
-    return answeredBlanks === totalBlanks;
+    const allBlanks = content.passages.flatMap(passage => passage.blanks);
+    return allBlanks.every(blank => answers[blank.id]?.trim().length > 0);
   };
 
   const renderPassageWithBlanks = (passage: any) => {
-    let text = passage.text;
-    const blanks = [...passage.blanks].sort((a, b) => b.position - a.position); // Sort descending to avoid position shifts
+    const blanks = passage.blanks.sort((a: BlankItem, b: BlankItem) => a.position - b.position);
+    const parts = [];
+    let currentText = passage.text;
+    let currentPosition = 0;
     
-    blanks.forEach(blank => {
+    blanks.forEach((blank: BlankItem, index: number) => {
+      // Add text before the blank
+      const textBeforeBlank = currentText.substring(currentPosition, blank.position);
+      if (textBeforeBlank) {
+        parts.push(
+          <span key={`text-${index}`}>{textBeforeBlank}</span>
+        );
+      }
+      
+      // Add the blank input
       const isCorrect = isBlankCorrect(blank);
       const inputClassName = showResults 
         ? isCorrect 
@@ -123,22 +166,35 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
           : 'border-red-500 bg-red-50'
         : 'border-border';
 
-      const input = `<span class="inline-block relative">
-        <input 
-          type="text" 
-          data-blank-id="${blank.id}"
-          value="${answers[blank.id] || ''}"
-          class="w-24 px-2 py-1 text-center border-2 rounded ${inputClassName} ${isComplete ? 'cursor-not-allowed' : ''}"
-          ${isComplete ? 'disabled' : ''}
-          placeholder="____"
-        />
-        ${showResults && !isCorrect ? `<span class="absolute -bottom-6 left-0 text-xs text-red-600 whitespace-nowrap">Answer: ${blank.correctAnswer}</span>` : ''}
-      </span>`;
+      parts.push(
+        <span key={`blank-${blank.id}`} className="inline-block relative mx-1">
+          <Input
+            value={answers[blank.id] || ''}
+            onChange={(e) => handleAnswerChange(blank.id, e.target.value)}
+            disabled={isComplete}
+            placeholder="____"
+            className={`w-24 h-8 text-center text-sm ${inputClassName}`}
+          />
+          {showResults && !isCorrect && (
+            <span className="absolute -bottom-6 left-0 text-xs text-red-600 whitespace-nowrap">
+              Answer: {blank.correctAnswer}
+            </span>
+          )}
+        </span>
+      );
       
-      text = text.substring(0, blank.position) + input + text.substring(blank.position);
+      currentPosition = blank.position;
     });
     
-    return text;
+    // Add remaining text after the last blank
+    const remainingText = currentText.substring(currentPosition);
+    if (remainingText) {
+      parts.push(
+        <span key="text-end">{remainingText}</span>
+      );
+    }
+    
+    return parts;
   };
 
   return (
@@ -179,26 +235,9 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Passage Text with Blanks */}
-            <div 
-              className="leading-relaxed text-foreground p-4 bg-muted rounded-lg relative"
-              dangerouslySetInnerHTML={{ __html: renderPassageWithBlanks(passage) }}
-            />
-
-            {/* Add event listeners for inputs */}
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  setTimeout(() => {
-                    document.querySelectorAll('[data-blank-id]').forEach(input => {
-                      input.addEventListener('input', (e) => {
-                        const blankId = e.target.getAttribute('data-blank-id');
-                        window.handleAnswerChange?.(blankId, e.target.value);
-                      });
-                    });
-                  }, 100);
-                `
-              }}
-            />
+            <div className="leading-relaxed text-foreground p-4 bg-muted rounded-lg relative">
+              {renderPassageWithBlanks(passage)}
+            </div>
 
             {/* Blanks List */}
             <div className="space-y-4">
@@ -237,20 +276,34 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
                           <div className="space-y-2">
                             <p className="text-sm font-medium">Choose the correct answer:</p>
                             <div className="grid grid-cols-2 gap-2">
-                              {blank.options.map((option, optionIndex) => (
-                                <button
-                                  key={optionIndex}
-                                  onClick={() => handleAnswerChange(blank.id, option)}
-                                  disabled={isComplete}
-                                  className={`p-2 text-sm rounded border-2 transition-all ${
-                                    answers[blank.id] === option
-                                      ? 'border-primary bg-primary/10'
-                                      : 'border-border hover:border-primary/50'
-                                  }`}
-                                >
-                                  {option}
-                                </button>
-                              ))}
+                              {blank.options.map((option, optionIndex) => {
+                                const isSelected = answers[blank.id] === option;
+                                const isCorrectOption = option === blank.correctAnswer;
+                                return (
+                                  <button
+                                    key={optionIndex}
+                                    onClick={() => handleAnswerChange(blank.id, option)}
+                                    disabled={isComplete}
+                                    className={`p-2 text-sm rounded border-2 transition-all ${
+                                      isSelected
+                                        ? showResults
+                                          ? isCorrectOption
+                                            ? 'border-green-500 bg-green-50'
+                                            : 'border-red-500 bg-red-50'
+                                          : 'border-primary bg-primary/10'
+                                        : 'border-border hover:border-primary/50'
+                                    } ${isComplete ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                  >
+                                    {option}
+                                    {showResults && isSelected && !isCorrectOption && (
+                                      <X className="w-3 h-3 inline-block ml-1 text-red-600" />
+                                    )}
+                                    {showResults && isSelected && isCorrectOption && (
+                                      <CheckCircle2 className="w-3 h-3 inline-block ml-1 text-green-600" />
+                                    )}
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         ) : (

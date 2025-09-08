@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import { Link, RotateCcw, CheckCircle2, X } from 'lucide-react';
 
 interface MatchingRendererProps {
@@ -19,6 +20,7 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
   setGameState,
   onComplete
 }) => {
+  const { toast } = useToast();
   const content = gameSchema.content as MatchingContent;
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
@@ -29,13 +31,10 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
 
   const checkCorrectness = () => {
     let correctCount = 0;
-    content.leftItems.forEach(leftItem => {
-      const matchedRightId = matches[leftItem.id];
-      if (matchedRightId) {
-        const rightItem = content.rightItems.find(r => r.id === matchedRightId);
-        if (rightItem && rightItem.matchId === leftItem.matchId) {
-          correctCount++;
-        }
+    content.pairs.forEach(pair => {
+      const matchedRight = matches[pair.id];
+      if (matchedRight === pair.right) {
+        correctCount++;
       }
     });
     return correctCount;
@@ -43,44 +42,80 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
 
   const calculateScore = () => {
     const correctCount = checkCorrectness();
-    const totalPairs = content.leftItems.length;
+    const totalPairs = content.pairs.length;
     return Math.floor((correctCount / totalPairs) * 100);
   };
 
-  const handleLeftSelect = (leftId: string) => {
-    if (matches[leftId]) {
+  const handleLeftSelect = (pairId: string) => {
+    if (matches[pairId]) {
       const newMatches = { ...matches };
-      delete newMatches[leftId];
+      delete newMatches[pairId];
       setMatches(newMatches);
       updateScore(newMatches);
       setSelectedLeft(null);
     } else {
-      setSelectedLeft(leftId);
+      setSelectedLeft(pairId);
       if (selectedRight) {
-        const newMatches = { ...matches, [leftId]: selectedRight };
+        const newMatches = { ...matches, [pairId]: selectedRight };
         setMatches(newMatches);
         updateScore(newMatches);
+        
+        // Check if the match is incorrect and show explanation
+        const pair = content.pairs.find(p => p.id === pairId);
+        if (pair && selectedRight !== pair.right) {
+          toast({
+            title: "❌ Incorrect Match",
+            description: `${pair.explanation}`,
+            duration: 4000,
+            variant: "destructive"
+          });
+        } else if (pair && selectedRight === pair.right) {
+          toast({
+            title: "✅ Correct Match!",
+            description: `Great job! ${pair.explanation}`,
+            duration: 3000,
+          });
+        }
+        
         setSelectedLeft(null);
         setSelectedRight(null);
       }
     }
   };
 
-  const handleRightSelect = (rightId: string) => {
-    const alreadyMatchedLeftId = Object.keys(matches).find(leftId => matches[leftId] === rightId);
+  const handleRightSelect = (rightContent: string) => {
+    const alreadyMatchedPairId = Object.keys(matches).find(pairId => matches[pairId] === rightContent);
     
-    if (alreadyMatchedLeftId) {
+    if (alreadyMatchedPairId) {
       const newMatches = { ...matches };
-      delete newMatches[alreadyMatchedLeftId];
+      delete newMatches[alreadyMatchedPairId];
       setMatches(newMatches);
       updateScore(newMatches);
       setSelectedRight(null);
     } else {
-      setSelectedRight(rightId);
+      setSelectedRight(rightContent);
       if (selectedLeft) {
-        const newMatches = { ...matches, [selectedLeft]: rightId };
+        const newMatches = { ...matches, [selectedLeft]: rightContent };
         setMatches(newMatches);
         updateScore(newMatches);
+        
+        // Check if the match is incorrect and show explanation
+        const pair = content.pairs.find(p => p.id === selectedLeft);
+        if (pair && rightContent !== pair.right) {
+          toast({
+            title: "❌ Incorrect Match",
+            description: `${pair.explanation}`,
+            duration: 4000,
+            variant: "destructive"
+          });
+        } else if (pair && rightContent === pair.right) {
+          toast({
+            title: "✅ Correct Match!",
+            description: `Great job! ${pair.explanation}`,
+            duration: 3000,
+          });
+        }
+        
         setSelectedLeft(null);
         setSelectedRight(null);
       }
@@ -89,16 +124,13 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
 
   const updateScore = (newMatches: Record<string, string>) => {
     let correctCount = 0;
-    content.leftItems.forEach(leftItem => {
-      const matchedRightId = newMatches[leftItem.id];
-      if (matchedRightId) {
-        const rightItem = content.rightItems.find(r => r.id === matchedRightId);
-        if (rightItem && rightItem.matchId === leftItem.matchId) {
-          correctCount++;
-        }
+    content.pairs.forEach(pair => {
+      const matchedRight = newMatches[pair.id];
+      if (matchedRight === pair.right) {
+        correctCount++;
       }
     });
-    const newScore = Math.floor((correctCount / content.leftItems.length) * 100);
+    const newScore = Math.floor((correctCount / content.pairs.length) * 100);
     setScore(newScore);
     setGameState(prev => ({ ...prev, score: newScore }));
   };
@@ -115,8 +147,8 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
       maxScore: 100,
       timeSpent: Math.floor((Date.now() - gameState.startTime) / 1000),
       correctAnswers: correctCount,
-      totalQuestions: content.leftItems.length,
-      accuracy: (correctCount / content.leftItems.length) * 100
+      totalQuestions: content.pairs.length,
+      accuracy: (correctCount / content.pairs.length) * 100
     };
     
     setGameState(prev => ({
@@ -139,7 +171,12 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
   };
 
   const isAllMatched = () => {
-    return content.leftItems.every(leftItem => matches[leftItem.id]);
+    return content.pairs.every(pair => matches[pair.id]);
+  };
+
+  // Get all unique right values for display
+  const getRightOptions = () => {
+    return content.pairs.map(pair => pair.right);
   };
 
   if (isComplete) {
@@ -156,10 +193,10 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
             <div className="flex justify-between items-center mb-4">
               <div className="text-sm text-muted-foreground space-x-4">
                 <span>
-                  Matched: {Object.keys(matches).length}/{content.leftItems.length}
+                  Matched: {Object.keys(matches).length}/{content.pairs.length}
                 </span>
                 <span>
-                  Correct: {checkCorrectness()}/{content.leftItems.length}
+                  Correct: {checkCorrectness()}/{content.pairs.length}
                 </span>
               </div>
               <Badge variant="secondary" className="text-lg px-3 py-1">
@@ -167,7 +204,7 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
               </Badge>
             </div>
             
-            <Progress value={(Object.keys(matches).length / content.leftItems.length) * 100} className="h-3" />
+            <Progress value={(Object.keys(matches).length / content.pairs.length) * 100} className="h-3" />
             
             <div className="flex gap-2 mt-4">
               <Button onClick={handleReset} variant="outline" className="border-2">
@@ -185,36 +222,43 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {content.leftItems.map(leftItem => {
-                  const matchedRightId = matches[leftItem.id];
-                  const matchedRightItem = content.rightItems.find(r => r.id === matchedRightId);
-                  const correctRightItem = content.rightItems.find(r => r.matchId === leftItem.matchId);
-                  const isCorrect = matchedRightItem && matchedRightItem.matchId === leftItem.matchId;
+                {content.pairs.map(pair => {
+                  const matchedRight = matches[pair.id];
+                  const isCorrect = matchedRight === pair.right;
                   
                   return (
-                    <div key={leftItem.id} className={`p-4 rounded-lg border-2 ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
-                      <div className="flex items-start gap-3">
+                    <div key={pair.id} className={`p-4 rounded-lg border-2 ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+                      <div className="flex items-center gap-3">
                         {isCorrect ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
                         ) : (
-                          <X className="w-5 h-5 text-red-600 mt-0.5" />
+                          <X className="w-5 h-5 text-red-600 flex-shrink-0" />
                         )}
                         <div className="flex-1">
-                          <div className="font-medium mb-2">
-                            <span className="text-blue-700">{leftItem.content}</span>
-                            <span className="mx-2">↔</span>
-                            <span className="text-purple-700">{correctRightItem?.content}</span>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                            <div>
+                              <strong className="text-sm font-medium">Left:</strong>
+                              <p className="text-sm">{pair.left}</p>
+                            </div>
+                            <div className="text-center">
+                              <div className="inline-flex items-center">
+                                <div className="w-4 h-0.5 bg-gray-300"></div>
+                                <div className="mx-2 text-xs text-gray-500">matches</div>
+                                <div className="w-4 h-0.5 bg-gray-300"></div>
+                              </div>
+                            </div>
+                            <div>
+                              <strong className="text-sm font-medium">Right:</strong>
+                              <p className={`text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                                {matchedRight || 'No match'}
+                              </p>
+                              {!isCorrect && (
+                                <p className="text-xs text-green-600 mt-1">
+                                  Correct: {pair.right}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          {(leftItem.explanation || correctRightItem?.explanation) && (
-                            <p className="text-sm text-muted-foreground">
-                              {leftItem.explanation || correctRightItem?.explanation}
-                            </p>
-                          )}
-                          {!isCorrect && matchedRightItem && (
-                            <p className="text-sm text-red-600 mt-1">
-                              You matched with: {matchedRightItem.content}
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -242,10 +286,10 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
           <div className="flex justify-between items-center">
             <div className="text-sm text-muted-foreground space-x-4">
               <span>
-                Matched: {Object.keys(matches).length}/{content.leftItems.length}
+                Matched: {Object.keys(matches).length}/{content.pairs.length}
               </span>
               <span>
-                Correct: {checkCorrectness()}/{content.leftItems.length}
+                Correct: {checkCorrectness()}/{content.pairs.length}
               </span>
             </div>
             <Badge variant="secondary" className="text-lg px-3 py-1">
@@ -253,7 +297,7 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
             </Badge>
           </div>
           
-          <Progress value={(Object.keys(matches).length / content.leftItems.length) * 100} className="h-3 mt-4" />
+          <Progress value={(Object.keys(matches).length / content.pairs.length) * 100} className="h-3 mt-4" />
         </CardContent>
       </Card>
 
@@ -263,23 +307,17 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
             <CardTitle className="text-lg">Connect These</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
-              {content.leftItems.map((leftItem) => {
-                const isMatched = !!matches[leftItem.id];
-                const isSelected = selectedLeft === leftItem.id;
-                const matchedRightId = matches[leftItem.id];
-                let matchedRightItem = null;
-                let isCorrect = false;
-                
-                if (matchedRightId) {
-                  matchedRightItem = content.rightItems.find(r => r.id === matchedRightId);
-                  isCorrect = matchedRightItem && matchedRightItem.matchId === leftItem.matchId;
-                }
+            <div className="space-y-3">
+              {content.pairs.map((pair) => {
+                const isMatched = !!matches[pair.id];
+                const isSelected = selectedLeft === pair.id;
+                const matchedRight = matches[pair.id];
+                const isCorrect = matchedRight === pair.right;
                 
                 return (
                   <div
-                    key={leftItem.id}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all min-h-[80px] flex flex-col justify-center ${
+                    key={pair.id}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all min-h-[60px] flex items-center justify-between ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50'
                         : isMatched
@@ -288,12 +326,17 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
                           : 'border-red-500 bg-red-50'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-blue-25'
                     }`}
-                    onClick={() => handleLeftSelect(leftItem.id)}
+                    onClick={() => handleLeftSelect(pair.id)}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{leftItem.content}</span>
+                    <span className="font-medium">{pair.left}</span>
+                    <div className="flex items-center gap-2">
+                      {isMatched && matchedRight && (
+                        <span className="text-xs text-muted-foreground">
+                          → {matchedRight}
+                        </span>
+                      )}
                       {isMatched && (
-                        <div className="flex items-center gap-1 ml-2">
+                        <div className="flex items-center gap-1">
                           {isCorrect ? (
                             <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                           ) : (
@@ -302,11 +345,6 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
                         </div>
                       )}
                     </div>
-                    {isMatched && matchedRightItem && (
-                      <div className="text-xs text-muted-foreground mt-1 truncate">
-                        → {matchedRightItem.content}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -319,22 +357,22 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
             <CardTitle className="text-lg">With These</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
-              {content.rightItems.map((rightItem) => {
-                const matchedLeftId = Object.keys(matches).find(leftId => matches[leftId] === rightItem.id);
-                const isMatched = !!matchedLeftId;
-                const isSelected = selectedRight === rightItem.id;
+            <div className="space-y-3">
+              {getRightOptions().map((rightOption, index) => {
+                const matchedPairId = Object.keys(matches).find(pairId => matches[pairId] === rightOption);
+                const isMatched = !!matchedPairId;
+                const isSelected = selectedRight === rightOption;
                 let isCorrect = false;
                 
-                if (matchedLeftId) {
-                  const matchedLeftItem = content.leftItems.find(l => l.id === matchedLeftId);
-                  isCorrect = matchedLeftItem && matchedLeftItem.matchId === rightItem.matchId;
+                if (matchedPairId) {
+                  const pair = content.pairs.find(p => p.id === matchedPairId);
+                  isCorrect = pair && pair.right === rightOption;
                 }
                 
                 return (
                   <div
-                    key={rightItem.id}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all min-h-[80px] flex flex-col justify-center ${
+                    key={`right-${index}`}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all min-h-[60px] flex items-center justify-between ${
                       isSelected
                         ? 'border-purple-500 bg-purple-50'
                         : isMatched
@@ -343,20 +381,18 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
                           : 'border-red-500 bg-red-50'
                         : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'
                     }`}
-                    onClick={() => handleRightSelect(rightItem.id)}
+                    onClick={() => handleRightSelect(rightOption)}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{rightItem.content}</span>
-                      {isMatched && (
-                        <div className="flex items-center gap-1 ml-2">
-                          {isCorrect ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          ) : (
-                            <X className="w-4 h-4 text-red-600 flex-shrink-0" />
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <span className="font-medium">{rightOption}</span>
+                    {isMatched && (
+                      <div className="flex items-center gap-1">
+                        {isCorrect ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <X className="w-4 h-4 text-red-600 flex-shrink-0" />
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -366,43 +402,27 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
       </div>
 
       {isAllMatched() && (
-        <Card className={`border-2 ${checkCorrectness() === content.leftItems.length ? 'border-green-500 bg-green-50' : 'border-orange-500 bg-orange-50'}`}>
-          <CardContent className="p-6 text-center">
-            <div className="text-4xl mb-4">
-              {checkCorrectness() === content.leftItems.length ? '🎉' : '🎯'}
+        <Card className={`border-2 ${checkCorrectness() === content.pairs.length ? 'border-green-500 bg-green-50' : 'border-orange-500 bg-orange-50'}`}>
+          <CardContent className="pt-6 text-center">
+            <div className="text-4xl mb-2">
+              {checkCorrectness() === content.pairs.length ? '🎉' : '🎯'}
             </div>
-            <h3 className={`text-2xl font-bold mb-2 ${checkCorrectness() === content.leftItems.length ? 'text-green-800' : 'text-orange-800'}`}>
-              {checkCorrectness() === content.leftItems.length ? 'Perfect Matching!' : 'Good Effort!'}
+            <h3 className={`text-2xl font-bold mb-2 ${checkCorrectness() === content.pairs.length ? 'text-green-800' : 'text-orange-800'}`}>
+              {checkCorrectness() === content.pairs.length ? 'Perfect Matching!' : 'Good Effort!'}
             </h3>
-            <p className={`mb-4 ${checkCorrectness() === content.leftItems.length ? 'text-green-700' : 'text-orange-700'}`}>
-              You correctly matched {checkCorrectness()} out of {content.leftItems.length} pairs.
+            <p className={`mb-4 ${checkCorrectness() === content.pairs.length ? 'text-green-700' : 'text-orange-700'}`}>
+              {checkCorrectness() === content.pairs.length 
+                ? 'Excellent work! You matched everything correctly!' 
+                : `You got ${checkCorrectness()} out of ${content.pairs.length} correct. Keep trying!`}
             </p>
-            
-            <div className="flex justify-center gap-4">
-              <Button
-                onClick={handleComplete}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
-                size="lg"
-              >
-                {showResults ? 'Continue' : 'Complete Game'}
+            <div className="flex gap-2 justify-center">
+              <Button onClick={handleComplete} className="bg-blue-600 hover:bg-blue-700">
+                Complete Game
               </Button>
-              
-              <Button
-                onClick={handleReset}
-                variant="outline"
-                size="lg"
-                className="border-2"
-              >
+              <Button onClick={handleReset} variant="outline" className="border-2">
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
+                Try Again
               </Button>
-            </div>
-            
-            <div className="mt-4 p-4 bg-white rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Accuracy</div>
-              <div className="text-2xl font-bold">
-                {Math.round((checkCorrectness() / content.leftItems.length) * 100)}%
-              </div>
             </div>
           </CardContent>
         </Card>

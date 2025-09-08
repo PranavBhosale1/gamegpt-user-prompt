@@ -193,6 +193,7 @@ export interface StoryEvent {
 
 export interface FillBlankContent {
   passages: FillBlankPassage[];
+  instructions: string;
 }
 
 export interface FillBlankPassage {

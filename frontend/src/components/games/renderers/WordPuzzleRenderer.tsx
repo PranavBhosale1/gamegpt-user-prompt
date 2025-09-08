@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, RotateCcw, CheckCircle2, X, Lightbulb } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff, RotateCcw, CheckCircle2, X, Lightbulb, Sparkles } from 'lucide-react';
 
 interface WordPuzzleRendererProps {
   gameSchema: GameSchema;
@@ -20,6 +21,7 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
   setGameState,
   onComplete
 }) => {
+  const { toast } = useToast();
   const content = gameSchema.content as WordPuzzleContent;
   const [grid, setGrid] = useState<string[][]>([]);
   const [gridSize, setGridSize] = useState<number>(12);
@@ -88,8 +90,10 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
         throw new Error('No words provided for the word puzzle');
       }
 
-      console.log('Words to place:', content.words);    // Robust word placement algorithm
-    const canPlaceWord = (word: string, direction: 'horizontal' | 'vertical', startRow: number, startCol: number): boolean => {
+      console.log('Words to place:', content.words);
+      
+      // Robust word placement algorithm
+      const canPlaceWord = (word: string, direction: 'horizontal' | 'vertical', startRow: number, startCol: number): boolean => {
       // Check if word fits in grid
       if (direction === 'horizontal') {
         if (startCol + word.length > size) return false;
@@ -136,30 +140,38 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
 
     const tryPlaceWord = (wordObj: WordPuzzleWord): boolean => {
       const word = wordObj.word;
-      const maxAttempts = 100;
       
-      // Try both directions if not specified
-      const directions: ('horizontal' | 'vertical')[] = wordObj.direction ? [wordObj.direction] : ['horizontal', 'vertical'];
+      // Use AI-provided coordinates instead of random placement
+      const direction = wordObj.direction;
+      const startRow = wordObj.startRow;
+      const startCol = wordObj.startCol;
       
-      for (const direction of directions) {
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          const maxStartRow = direction === 'horizontal' ? size - 1 : size - word.length;
-          const maxStartCol = direction === 'horizontal' ? size - word.length : size - 1;
-          
-          if (maxStartRow < 0 || maxStartCol < 0) continue;
-          
-          const startRow = Math.floor(Math.random() * (maxStartRow + 1));
-          const startCol = Math.floor(Math.random() * (maxStartCol + 1));
-          
-          if (canPlaceWord(word, direction, startRow, startCol)) {
-            placeWord(word, direction, startRow, startCol);
-            console.log(`Placed word "${word}" at (${startRow}, ${startCol}) ${direction}`);
-            return true;
-          }
-        }
+      // Validate the AI-provided coordinates
+      if (startRow < 0 || startRow >= size || startCol < 0 || startCol >= size) {
+        console.warn(`Invalid coordinates for word "${word}": (${startRow}, ${startCol})`);
+        return false;
       }
       
-      return false;
+      // Check if word fits with provided coordinates
+      if (direction === 'horizontal' && startCol + word.length > size) {
+        console.warn(`Word "${word}" doesn't fit horizontally at (${startRow}, ${startCol})`);
+        return false;
+      }
+      
+      if (direction === 'vertical' && startRow + word.length > size) {
+        console.warn(`Word "${word}" doesn't fit vertically at (${startRow}, ${startCol})`);
+        return false;
+      }
+      
+      // Check for conflicts with existing words
+      if (canPlaceWord(word, direction, startRow, startCol)) {
+        placeWord(word, direction, startRow, startCol);
+        console.log(`Placed word "${word}" at AI coordinates (${startRow}, ${startCol}) ${direction}`);
+        return true;
+      } else {
+        console.warn(`Cannot place word "${word}" at AI coordinates (${startRow}, ${startCol}) due to conflicts`);
+        return false;
+      }
     };
 
     // Sort words by length (longer words first for better placement)
@@ -308,6 +320,14 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
       const newScore = Math.floor((newFoundWords.size / placedWordPositions.length) * gameSchema.scoring.maxScore);
       setScore(newScore);
       setGameState(prev => ({ ...prev, score: newScore }));
+
+      // Show success toast with word reveal
+      const originalWord = content.words.find(w => w.word.toUpperCase() === matchedWord.word);
+      toast({
+        title: "🎉 Word Found!",
+        description: `"${matchedWord.word}" - ${originalWord?.hint || 'Great job!'}`,
+        duration: 3000,
+      });
 
       if (newFoundWords.size === placedWordPositions.length) {
         handleComplete();
@@ -524,10 +544,13 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
           </Card>
         </div>
 
-        {/* Word List */}
+        {/* Word Hints List */}
         <Card className="border-2">
           <CardHeader>
-            <CardTitle className="text-lg">Words to Find</CardTitle>
+            <CardTitle className="text-lg">Word Hints</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Find words using these clues. Words will be revealed when found!
+            </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {placedWordPositions.map((wordData, index) => {
@@ -537,28 +560,62 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
               return (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border-2 transition-all ${
+                  className={`p-3 rounded-lg border-2 transition-all duration-300 ${
                     isFound 
-                      ? 'border-green-500 bg-green-50' 
-                      : 'border-border bg-background'
+                      ? 'border-green-500 bg-green-50 shadow-md transform scale-105' 
+                      : 'border-border bg-background hover:border-blue-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium ${isFound ? 'line-through text-green-600' : ''}`}>
-                        {wordData.word}
-                      </span>
-                      {isFound && <CheckCircle2 className="w-4 h-4 text-green-600" />}
+                      {isFound ? (
+                        // Show the word when found with celebration effect
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-green-600 animate-pulse" />
+                          <span className="font-bold text-green-700 text-lg">
+                            {wordData.word}
+                          </span>
+                        </div>
+                      ) : (
+                        // Show placeholder when not found
+                        <span className="font-medium text-muted-foreground font-mono">
+                          {wordData.word.split('').map((_, i) => '?').join(' ')}
+                        </span>
+                      )}
+                      {isFound && <CheckCircle2 className="w-5 h-5 text-green-600 animate-bounce" />}
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {wordData.direction}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {isFound && (
+                        <Badge variant="outline" className="text-xs bg-green-100 text-green-700">
+                          {wordData.word.length} letters
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   {originalWord && (
-                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                      <Lightbulb className="w-3 h-3" />
-                      {originalWord.hint}
-                    </p>
+                    <div className={`mt-3 p-3 rounded-lg border-l-4 transition-all ${
+                      isFound 
+                        ? 'bg-green-100 border-green-400' 
+                        : 'bg-blue-50 border-blue-300'
+                    }`}>
+                      <p className={`text-sm flex items-center gap-2 ${
+                        isFound ? 'text-green-800' : 'text-blue-800'
+                      }`}>
+                        <Lightbulb className="w-4 h-4" />
+                        <strong>Hint:</strong> {originalWord.hint}
+                      </p>
+                      {!isFound && (
+                        <p className="text-xs text-blue-600 mt-2">
+                          <span>{wordData.word.length} letters</span>
+                        </p>
+                      )}
+                      {isFound && (
+                        <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Found! Well done!</span>
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -620,5 +677,3 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
     </div>
   );
 };
-
-export default WordPuzzleRenderer;
