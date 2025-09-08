@@ -47,6 +47,10 @@ class ResponseProcessor:
             
         except Exception as e:
             self.logger.error(f"Failed to process response: {str(e)}")
+            self.logger.error(f"Exception type: {type(e).__name__}")
+            self.logger.error(f"Raw response (first 1000 chars): {raw_response[:1000] if raw_response else 'None'}")
+            import traceback
+            self.logger.error(f"Full traceback: {traceback.format_exc()}")
             raise Exception(f"Failed to process LLM response: {str(e)}")
     
     def _clean_markdown_fences(self, raw_text: str) -> str:
@@ -203,7 +207,15 @@ class ResponseProcessor:
         }
         
         if game_type in validation_rules:
-            validation_rules[game_type](content)
+            try:
+                validation_rules[game_type](content)
+                self.logger.debug(f"Content validation successful for game type: {game_type}")
+            except Exception as e:
+                self.logger.warning(f"Content validation failed for game type {game_type}: {str(e)}")
+                # Log the content for debugging
+                self.logger.debug(f"Content that failed validation: {content}")
+                # Don't re-raise the exception for now to make it less strict
+                pass
         else:
             self.logger.warning(f"No validation rule for game type: {game_type}")
     

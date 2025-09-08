@@ -155,7 +155,7 @@ def create_error_response(
     """Create a structured HTTPException with error details"""
     
     error_detail = ErrorDetail(
-        code=error_code,
+        code=error_code.value,
         message=message,
         details=details
     )
@@ -196,7 +196,7 @@ def handle_service_error(
     # Handle specific error types
     if "timeout" in str(error).lower():
         return create_error_response(
-            error_code=ErrorCode.TIMEOUT_ERROR.value,
+            error_code=ErrorCode.TIMEOUT_ERROR,
             message=f"Service timeout in {service_name}",
             details={"service": service_name, "operation": operation},
             status_code=504
@@ -204,7 +204,7 @@ def handle_service_error(
     
     if "connection" in str(error).lower():
         return create_error_response(
-            error_code=ErrorCode.SERVICE_UNAVAILABLE.value,
+            error_code=ErrorCode.SERVICE_UNAVAILABLE,
             message=f"Service unavailable: {service_name}",
             details={"service": service_name, "operation": operation},
             status_code=503
@@ -212,7 +212,7 @@ def handle_service_error(
     
     # Generic service error
     return create_error_response(
-        error_code=ErrorCode.SERVICE_UNAVAILABLE.value,
+        error_code=ErrorCode.SERVICE_UNAVAILABLE,
         message=f"Internal service error in {service_name}",
         details={"service": service_name, "operation": operation},
         status_code=503
@@ -240,7 +240,7 @@ def handle_validation_error(
     
     # Generic validation error
     return create_error_response(
-        error_code=ErrorCode.INVALID_REQUEST.value,
+        error_code=ErrorCode.INVALID_REQUEST,
         message=f"Validation failed: {str(error)}",
         details={"field": field} if field else None,
         status_code=400
@@ -271,7 +271,7 @@ def handle_external_service_error(
     # Map common external service errors
     if status_code == 429:
         return create_error_response(
-            error_code=ErrorCode.GEMINI_RATE_LIMIT.value,
+            error_code=ErrorCode.GEMINI_RATE_LIMIT,
             message="Rate limit exceeded for AI service",
             details={"service": service_name, "retry_after": "60s"},
             status_code=429
@@ -279,7 +279,7 @@ def handle_external_service_error(
     
     if status_code == 403:
         return create_error_response(
-            error_code=ErrorCode.GEMINI_QUOTA_EXCEEDED.value,
+            error_code=ErrorCode.GEMINI_QUOTA_EXCEEDED,
             message="API quota exceeded for AI service",
             details={"service": service_name},
             status_code=503
@@ -287,7 +287,7 @@ def handle_external_service_error(
     
     # Generic external service error
     return create_error_response(
-        error_code=ErrorCode.GEMINI_API_ERROR.value,
+        error_code=ErrorCode.GEMINI_API_ERROR,
         message=f"External service error: {service_name}",
         details={"service": service_name, "status_code": status_code},
         status_code=502

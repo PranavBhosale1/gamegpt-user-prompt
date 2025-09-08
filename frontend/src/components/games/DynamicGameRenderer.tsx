@@ -69,7 +69,7 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
     }));
     
     toast({
-      title: "Game Started! 🎮",
+      title: "Game Started!",
       description: "Good luck and have fun learning!"
     });
   };
@@ -110,7 +110,7 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
     setResults(null);
     
     toast({
-      title: "Game Reset! 🔄",
+      title: "Game Reset!",
       description: "Ready to play again!"
     });
   };
@@ -225,9 +225,9 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
     
     return (
       <div className="max-w-2xl mx-auto">
-        <Card className="border-2 shadow-lg">
+        <Card className="border-2">
           <CardHeader className="text-center pb-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full mb-4 mx-auto">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary rounded-full mb-4 mx-auto">
               {passed ? (
                 <Trophy className="w-10 h-10 text-white" />
               ) : (
@@ -235,7 +235,7 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
               )}
             </div>
             <CardTitle className="text-3xl font-bold">
-              {passed ? '🎉 Congratulations!' : '💪 Good Effort!'}
+              {passed ? 'Congratulations!' : 'Good Effort!'}
             </CardTitle>
             <p className="text-muted-foreground">
               {passed 
@@ -326,9 +326,9 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
   if (!gameState.isStarted) {
     return (
       <div className="max-w-2xl mx-auto">
-        <Card className="border-2 shadow-lg">
+        <Card className="border-2">
           <CardHeader className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary to-accent rounded-full mb-4 mx-auto">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4 mx-auto">
               <Play className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold">{gameSchema.title}</CardTitle>
@@ -372,7 +372,7 @@ export const DynamicGameRenderer: React.FC<DynamicGameRendererProps> = ({
             {/* Start Button */}
             <Button 
               onClick={handleGameStart}
-              className="w-full py-6 text-lg bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300"
+              className="w-full py-6 text-lg bg-primary"
             >
               <Play className="w-5 h-5 mr-2" />
               Start Game

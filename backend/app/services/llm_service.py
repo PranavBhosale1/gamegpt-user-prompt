@@ -88,7 +88,7 @@ class LLMService:
             self.logger.error(f"Gemini generation failed: {str(e)}")
             raise ExternalServiceException(
                 message=f"Gemini generation failed: {str(e)}",
-                error_code=ErrorCode.GEMINI_API_ERROR.value,
+                error_code=ErrorCode.GEMINI_API_ERROR,
                 service_name="gemini",
                 details={"operation": "generate_response"}
             )
@@ -98,7 +98,7 @@ class LLMService:
         if not self.settings.GOOGLE_API_KEY:
             raise ExternalServiceException(
                 message="Gemini API key not configured",
-                error_code=ErrorCode.CONFIGURATION_ERROR.value,
+                error_code=ErrorCode.CONFIGURATION_ERROR,
                 service_name="gemini",
                 details={"operation": "generate_response"}
             )
@@ -144,7 +144,7 @@ class LLMService:
                 if response.status_code == 429:
                     raise ExternalServiceException(
                         message="Rate limit exceeded for Gemini API",
-                        error_code=ErrorCode.GEMINI_RATE_LIMIT.value,
+                        error_code=ErrorCode.GEMINI_RATE_LIMIT,
                         service_name="gemini",
                         status_code=response.status_code,
                         details={"retry_after": "60s"}
@@ -152,14 +152,14 @@ class LLMService:
                 elif response.status_code == 403:
                     raise ExternalServiceException(
                         message="API quota exceeded for Gemini",
-                        error_code=ErrorCode.GEMINI_QUOTA_EXCEEDED.value,
+                        error_code=ErrorCode.GEMINI_QUOTA_EXCEEDED,
                         service_name="gemini",
                         status_code=response.status_code
                     )
                 else:
                     raise ExternalServiceException(
                         message=f"Gemini API error: {response.status_code}",
-                        error_code=ErrorCode.GEMINI_API_ERROR.value,
+                        error_code=ErrorCode.GEMINI_API_ERROR,
                         service_name="gemini",
                         status_code=response.status_code,
                         details={"error_text": error_text}
@@ -176,7 +176,7 @@ class LLMService:
                 self.logger.error(f"Unexpected Gemini response format: {result}")
                 raise ExternalServiceException(
                     message=f"Unexpected Gemini response format: {str(e)}",
-                    error_code=ErrorCode.GEMINI_API_ERROR.value,
+                    error_code=ErrorCode.GEMINI_API_ERROR,
                     service_name="gemini",
                     details={"response_structure": str(result)}
                 )
@@ -184,14 +184,14 @@ class LLMService:
         except httpx.TimeoutException:
             raise ExternalServiceException(
                 message="Gemini API request timed out",
-                error_code=ErrorCode.TIMEOUT_ERROR.value,
+                error_code=ErrorCode.TIMEOUT_ERROR,
                 service_name="gemini",
                 details={"timeout": self.settings.REQUEST_TIMEOUT}
             )
         except httpx.ConnectError:
             raise ExternalServiceException(
                 message="Failed to connect to Gemini API",
-                error_code=ErrorCode.GEMINI_API_ERROR.value,
+                error_code=ErrorCode.GEMINI_API_ERROR,
                 service_name="gemini",
                 details={"operation": "connection"}
             )

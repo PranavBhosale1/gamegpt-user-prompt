@@ -231,7 +231,127 @@ Requirements: 6-20 pairs based on difficulty, meaningful therapeutic connections
     }}
   }}
 }}
-Requirements: 3-8 connected scenarios, evidence-based coping strategies, progressive skill building"""
+Requirements: 3-8 connected scenarios, evidence-based coping strategies, progressive skill building""",
+
+        GameType.SORTING: """SORTING CONTENT:
+"content": {{
+  "items": [
+    {{
+      "id": "item1",
+      "content": "[Item to sort]",
+      "image": "[optional item image]",
+      "correctCategory": "cat1",
+      "difficulty": "[1-5 optional]"
+    }}
+  ],
+  "categories": [
+    {{
+      "id": "cat1",
+      "name": "[Category name]",
+      "description": "[What belongs here - therapeutic rationale]",
+      "color": "[blue|green|red|purple|orange]"
+    }}
+  ],
+  "instructions": "[Sorting instructions with therapeutic context]"
+}}
+Requirements: 6-16 items, 2-4 categories, therapeutic categorization focus""",
+
+        GameType.MATCHING: """MATCHING CONTENT:
+"content": {{
+  "pairs": [
+    {{
+      "id": "pair1",
+      "left": "[Left side item - problem/trigger/concept]",
+      "right": "[Right side item - solution/coping strategy/related concept]",
+      "explanation": "[Why these match - therapeutic insight]"
+    }}
+  ],
+  "instructions": "[Matching instructions with therapeutic focus]"
+}}
+Requirements: 4-12 pairs, meaningful therapeutic connections between left and right items""",
+
+        GameType.STORY_SEQUENCE: """STORY-SEQUENCE CONTENT:
+"content": {{
+  "events": [
+    {{
+      "id": "event1",
+      "content": "[Event description]",
+      "image": "[optional event image]",
+      "order": 1,
+      "description": "[Additional context about this step]",
+      "explanation": "[Why this step comes at this point - therapeutic reasoning]"
+    }}
+  ],
+  "title": "[Process/technique title]",
+  "theme": "[Therapeutic theme or wellness topic]"
+}}
+Requirements: 4-10 events, logical therapeutic sequence, educational progression""",
+
+        GameType.FILL_BLANK: """FILL-BLANK CONTENT:
+"content": {{
+  "passages": [
+    {{
+      "id": "passage1",
+      "text": "[Therapeutic text with [BLANK1] placeholders]",
+      "blanks": [
+        {{
+          "id": "blank1",
+          "position": 1,
+          "correctAnswer": "[therapeutic term/concept]",
+          "options": ["[correct]", "[distractor1]", "[distractor2]", "[distractor3]"],
+          "hint": "[Therapeutic hint]"
+        }}
+      ]
+    }}
+  ]
+}}
+Requirements: 1-3 passages, 3-8 blanks total, therapeutic vocabulary focus""",
+
+        GameType.CARD_FLIP: """CARD-FLIP CONTENT:
+"content": {{
+  "cards": [
+    {{
+      "id": "card1",
+      "front": "[Front text - concept/term]",
+      "back": "[Back text - explanation/technique]",
+      "frontImage": "[optional front image]",
+      "backImage": "[optional back image]",
+      "category": "[optional card category]"
+    }}
+  ],
+  "instructions": "[How to use these therapeutic flashcards]"
+}}
+Requirements: 8-20 cards, therapeutic concepts and techniques, clear front/back relationship""",
+
+        GameType.WORD_PUZZLE: """WORD-PUZZLE CONTENT:
+"content": {{
+  "words": [
+    {{
+      "word": "[THERAPEUTIC_TERM]",
+      "hint": "[Clue about this wellness concept]",
+      "direction": "[horizontal|vertical]",
+      "startRow": "[0-14]",
+      "startCol": "[0-14]"
+    }}
+  ],
+  "gridSize": "[10-20]",
+  "theme": "[Therapeutic theme]"
+}}
+Requirements: 6-15 words, therapeutic vocabulary, grid size 10-20, balanced word placement""",
+
+        GameType.PUZZLE_ASSEMBLY: """PUZZLE-ASSEMBLY CONTENT:
+"content": {{
+  "pieces": [
+    {{
+      "id": "piece1",
+      "image": "[Piece description]",
+      "correctPosition": {{"x": "[0-8]", "y": "[0-8]"}}
+    }}
+  ],
+  "targetImage": "[Complete therapeutic concept image description]",
+  "gridSize": "[4-16]"
+}}
+Requirements: 9-64 pieces depending on difficulty, therapeutic visual content, logical assembly"""
     }
 
     # Therapeutic guidelines

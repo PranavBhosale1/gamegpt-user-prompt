@@ -26,6 +26,7 @@ from app.core.exceptions import (
     handle_service_error, 
     handle_validation_error, 
     handle_external_service_error,
+    create_error_response,
     ErrorCode
 )
 
@@ -93,6 +94,9 @@ async def root():
 
 
 @app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 async def health_check(services: ServiceContainer = Depends(get_services)):
     """Detailed health check with dependency injection"""
     try:
@@ -153,13 +157,11 @@ async def generate_game(
         raise
     except Exception as e:
         logger.error(f"Unexpected error generating game: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "code": ErrorCode.INTERNAL_ERROR.value,
-                "message": "Internal server error during game generation",
-                "details": {"error": str(e)}
-            }
+        raise create_error_response(
+            error_code=ErrorCode.INTERNAL_ERROR,
+            message="Internal server error during game generation",
+            details={"error": str(e)},
+            status_code=500
         )
 
 
@@ -203,13 +205,11 @@ async def generate_game_debug(
         raise
     except Exception as e:
         logger.error(f"Debug generation error: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "code": ErrorCode.INTERNAL_ERROR.value,
-                "message": "Debug generation failed",
-                "details": {"error": str(e)}
-            }
+        raise create_error_response(
+            error_code=ErrorCode.INTERNAL_ERROR,
+            message="Debug generation failed",
+            details={"error": str(e)},
+            status_code=500
         )
 
 

@@ -202,7 +202,7 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
       {/* Instructions */}
       <Card className="border-2">
         <CardHeader>
-          <CardTitle className="text-xl">🧠 {gameSchema.title}</CardTitle>
+          <CardTitle className="text-xl">{gameSchema.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
@@ -216,7 +216,10 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
       <Card className="border-2">
         <CardContent className="p-6">
           <div 
-            className={`grid gap-4 justify-center grid-cols-${gridCols} max-w-fit mx-auto`}
+            className="grid gap-4 justify-center max-w-fit mx-auto"
+            style={{
+              gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`
+            }}
           >
             {cards.map((card) => (
               <div
@@ -235,7 +238,7 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
                   ${card.isFlipped || card.isMatched ? 'opacity-0' : 'opacity-100'}
                 `}>
                   <div className="text-center">
-                    <div className="text-2xl mb-1">🧠</div>
+                    <div className="text-2xl mb-1">?</div>
                     <div className="text-xs font-medium">Memory</div>
                   </div>
                 </div>
@@ -276,7 +279,7 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
                 <span className="text-white text-xs">✓</span>
               </div>
               <div>
-                <p className="font-medium text-green-800 mb-1">Great match! 🎉</p>
+                <p className="font-medium text-green-800 mb-1">Great match!</p>
                 <p className="text-sm text-green-700">{showExplanation.explanation}</p>
               </div>
             </div>
@@ -288,7 +291,7 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
       {isComplete && (
         <Card className="border-2 border-green-500 bg-green-50">
           <CardContent className="p-6 text-center">
-            <div className="text-6xl mb-4">🏆</div>
+            <div className="text-6xl mb-4 font-bold text-green-600">SUCCESS</div>
             <h3 className="text-2xl font-bold text-green-800 mb-2">
               Fantastic Memory Work!
             </h3>
@@ -296,8 +299,8 @@ export const MemoryMatchRenderer: React.FC<MemoryMatchRendererProps> = ({
               You found all {matchedPairs.length} pairs in just {moves} moves!
             </p>
             <div className="flex justify-center gap-4 text-sm text-green-600">
-              <span>⏱️ Time: {Math.floor((Date.now() - gameState.startTime) / 1000)}s</span>
-              <span>🎯 Perfect Score!</span>
+              <span>Time: {Math.floor((Date.now() - gameState.startTime) / 1000)}s</span>
+              <span>Perfect Score!</span>
             </div>
           </CardContent>
         </Card>
