@@ -166,12 +166,15 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
     
     let hasPlaceholders = false;
     let placeholderCount = 0;
+    let detectedPattern = null;
     
     for (const pattern of placeholderPatterns) {
       const matches = text.match(pattern);
       if (matches && matches.length > 0) {
         hasPlaceholders = true;
         placeholderCount = matches.length;
+        detectedPattern = pattern;
+        console.log('Detected pattern:', pattern, 'matches:', matches);
         break;
       }
     }
@@ -186,29 +189,37 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
       // Find the pattern that matches
       let matchingPattern = null;
       for (const pattern of placeholderPatterns) {
-        if (pattern.test(result)) {
+        const testPattern = new RegExp(pattern.source, pattern.flags);
+        if (testPattern.test(result)) {
           matchingPattern = pattern;
           break;
         }
       }
       
       if (matchingPattern) {
-        // Split the text by the matching pattern
-        const segments = result.split(matchingPattern);
-        const matches = Array.from(text.matchAll(matchingPattern));
+        // Create a fresh regex instance for splitting
+        const splitPattern = new RegExp(matchingPattern.source, matchingPattern.flags);
         
-        let segmentIndex = 0;
-        let matchIndex = 0;
+        // Find all matches first
+        const matches = Array.from(text.matchAll(new RegExp(matchingPattern.source, 'g')));
         
-        while (segmentIndex < segments.length || matchIndex < matches.length) {
-          // Add text segment
-          if (segmentIndex < segments.length && segments[segmentIndex]) {
-            parts.push(<span key={`text-${segmentIndex}`}>{segments[segmentIndex]}</span>);
+        let lastIndex = 0;
+        let blankIndex = 0;
+        
+        matches.forEach((match: RegExpMatchArray, index) => {
+          const matchStart = match.index ?? 0;
+          
+          // Add text before this placeholder
+          if (matchStart > lastIndex) {
+            const textBefore = text.substring(lastIndex, matchStart);
+            if (textBefore) {
+              parts.push(<span key={`text-${index}`}>{textBefore}</span>);
+            }
           }
           
-          // Add blank for the match
-          if (matchIndex < matches.length && matchIndex < blanks.length) {
-            const blank = blanks[matchIndex];
+          // Add blank for this placeholder
+          if (blankIndex < blanks.length) {
+            const blank = blanks[blankIndex];
             const isCorrect = isBlankCorrect(blank);
             const inputClassName = showResults 
               ? isCorrect 
@@ -232,10 +243,18 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
                 )}
               </span>
             );
-            matchIndex++;
+            blankIndex++;
           }
           
-          segmentIndex++;
+          lastIndex = matchStart + (match[0]?.length || 0);
+        });
+        
+        // Add remaining text after the last placeholder
+        if (lastIndex < text.length) {
+          const remainingText = text.substring(lastIndex);
+          if (remainingText) {
+            parts.push(<span key="text-end">{remainingText}</span>);
+          }
         }
       }
       
