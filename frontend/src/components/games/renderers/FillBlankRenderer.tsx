@@ -144,57 +144,161 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
   };
 
   const renderPassageWithBlanks = (passage: any) => {
+    let text = passage.text;
     const blanks = passage.blanks.sort((a: BlankItem, b: BlankItem) => a.position - b.position);
-    const parts = [];
-    let currentText = passage.text;
-    let currentPosition = 0;
     
-    blanks.forEach((blank: BlankItem, index: number) => {
-      // Add text before the blank
-      const textBeforeBlank = currentText.substring(currentPosition, blank.position);
-      if (textBeforeBlank) {
-        parts.push(
-          <span key={`text-${index}`}>{textBeforeBlank}</span>
-        );
+    // Debug: Log the passage structure to understand the data
+    console.log('Passage text:', text);
+    console.log('Blanks:', blanks.map(b => ({ id: b.id, position: b.position, answer: b.correctAnswer })));
+    
+    // First, try to detect if the text uses placeholder patterns
+    const placeholderPatterns = [
+      /\[BLANK\d+\]/gi,     // [BLANK1], [BLANK2], etc.
+      /\{BLANK\d+\}/gi,     // {BLANK1}, {BLANK2}, etc.
+      /\[blank\d+\]/gi,     // [blank1], [blank2], etc.
+      /\{blank\d+\}/gi,     // {blank1}, {blank2}, etc.
+      /____+/g,             // ____
+      /___+/g,              // ___
+      /__+/g,               // __
+      /\(\s*\)/g,           // ( )
+      /\[\s*\]/g            // [ ]
+    ];
+    
+    let hasPlaceholders = false;
+    let placeholderCount = 0;
+    
+    for (const pattern of placeholderPatterns) {
+      const matches = text.match(pattern);
+      if (matches && matches.length > 0) {
+        hasPlaceholders = true;
+        placeholderCount = matches.length;
+        break;
       }
-      
-      // Add the blank input
-      const isCorrect = isBlankCorrect(blank);
-      const inputClassName = showResults 
-        ? isCorrect 
-          ? 'border-green-500 bg-green-50' 
-          : 'border-red-500 bg-red-50'
-        : 'border-border';
-
-      parts.push(
-        <span key={`blank-${blank.id}`} className="inline-block relative mx-1">
-          <Input
-            value={answers[blank.id] || ''}
-            onChange={(e) => handleAnswerChange(blank.id, e.target.value)}
-            disabled={isComplete}
-            placeholder="____"
-            className={`w-24 h-8 text-center text-sm ${inputClassName}`}
-          />
-          {showResults && !isCorrect && (
-            <span className="absolute -bottom-6 left-0 text-xs text-red-600 whitespace-nowrap">
-              Answer: {blank.correctAnswer}
-            </span>
-          )}
-        </span>
-      );
-      
-      currentPosition = blank.position;
-    });
-    
-    // Add remaining text after the last blank
-    const remainingText = currentText.substring(currentPosition);
-    if (remainingText) {
-      parts.push(
-        <span key="text-end">{remainingText}</span>
-      );
     }
     
-    return parts;
+    if (hasPlaceholders && placeholderCount === blanks.length) {
+      // Use placeholder replacement approach
+      let result = text;
+      
+      // For numbered placeholders like [BLANK1], [BLANK2], we need to map them correctly
+      const parts = [];
+      
+      // Find the pattern that matches
+      let matchingPattern = null;
+      for (const pattern of placeholderPatterns) {
+        if (pattern.test(result)) {
+          matchingPattern = pattern;
+          break;
+        }
+      }
+      
+      if (matchingPattern) {
+        // Split the text by the matching pattern
+        const segments = result.split(matchingPattern);
+        const matches = Array.from(text.matchAll(matchingPattern));
+        
+        let segmentIndex = 0;
+        let matchIndex = 0;
+        
+        while (segmentIndex < segments.length || matchIndex < matches.length) {
+          // Add text segment
+          if (segmentIndex < segments.length && segments[segmentIndex]) {
+            parts.push(<span key={`text-${segmentIndex}`}>{segments[segmentIndex]}</span>);
+          }
+          
+          // Add blank for the match
+          if (matchIndex < matches.length && matchIndex < blanks.length) {
+            const blank = blanks[matchIndex];
+            const isCorrect = isBlankCorrect(blank);
+            const inputClassName = showResults 
+              ? isCorrect 
+                ? 'border-green-500 bg-green-50' 
+                : 'border-red-500 bg-red-50'
+              : 'border-border';
+
+            parts.push(
+              <span key={`blank-${blank.id}`} className="inline-block relative mx-1">
+                <Input
+                  value={answers[blank.id] || ''}
+                  onChange={(e) => handleAnswerChange(blank.id, e.target.value)}
+                  disabled={isComplete}
+                  placeholder="____"
+                  className={`w-24 h-8 text-center text-sm ${inputClassName}`}
+                />
+                {showResults && !isCorrect && (
+                  <span className="absolute -bottom-6 left-0 text-xs text-red-600 whitespace-nowrap">
+                    Answer: {blank.correctAnswer}
+                  </span>
+                )}
+              </span>
+            );
+            matchIndex++;
+          }
+          
+          segmentIndex++;
+        }
+      }
+      
+      return parts;
+    } else {
+      // Fallback: Use position-based approach, but more carefully
+      const result = [];
+      let currentPosition = 0;
+      
+      // Sort blanks by position ascending
+      const sortedBlanks = [...blanks].sort((a, b) => a.position - b.position);
+      
+      sortedBlanks.forEach((blank, index) => {
+        // Add text before this blank
+        if (blank.position > currentPosition) {
+          const textBefore = text.substring(currentPosition, blank.position);
+          if (textBefore) {
+            result.push(
+              <span key={`text-${index}`}>{textBefore}</span>
+            );
+          }
+        }
+        
+        // Add the blank input
+        const isCorrect = isBlankCorrect(blank);
+        const inputClassName = showResults 
+          ? isCorrect 
+            ? 'border-green-500 bg-green-50' 
+            : 'border-red-500 bg-red-50'
+          : 'border-border';
+
+        result.push(
+          <span key={`blank-${blank.id}`} className="inline-block relative mx-1">
+            <Input
+              value={answers[blank.id] || ''}
+              onChange={(e) => handleAnswerChange(blank.id, e.target.value)}
+              disabled={isComplete}
+              placeholder="____"
+              className={`w-24 h-8 text-center text-sm ${inputClassName}`}
+            />
+            {showResults && !isCorrect && (
+              <span className="absolute -bottom-6 left-0 text-xs text-red-600 whitespace-nowrap">
+                Answer: {blank.correctAnswer}
+              </span>
+            )}
+          </span>
+        );
+        
+        currentPosition = blank.position;
+      });
+      
+      // Add remaining text after the last blank
+      if (currentPosition < text.length) {
+        const textAfter = text.substring(currentPosition);
+        if (textAfter) {
+          result.push(
+            <span key="text-end">{textAfter}</span>
+          );
+        }
+      }
+      
+      return result;
+    }
   };
 
   return (
