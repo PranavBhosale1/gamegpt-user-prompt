@@ -145,7 +145,16 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
 
   const renderPassageWithBlanks = (passage: any) => {
     let text = passage.text;
-    const blanks = passage.blanks.sort((a: BlankItem, b: BlankItem) => a.position - b.position);
+    
+    // Convert positions to numbers if they come as strings and sort
+    const blanks = passage.blanks.map((blank: BlankItem) => ({
+      ...blank,
+      position: typeof blank.position === 'string' ? parseInt(blank.position, 10) : blank.position
+    })).sort((a: BlankItem, b: BlankItem) => {
+      const posA = typeof a.position === 'number' ? a.position : parseInt(String(a.position), 10);
+      const posB = typeof b.position === 'number' ? b.position : parseInt(String(b.position), 10);
+      return posA - posB;
+    });
     
     // Debug: Log the passage structure to understand the data
     console.log('Passage text:', text);
@@ -204,7 +213,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
         const matches = Array.from(text.matchAll(new RegExp(matchingPattern.source, 'g')));
         
         let lastIndex = 0;
-        let blankIndex = 0;
+        let passageBlankIndex = 0; // Use passage-specific blank index
         
         matches.forEach((match: RegExpMatchArray, index) => {
           const matchStart = match.index ?? 0;
@@ -213,13 +222,13 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
           if (matchStart > lastIndex) {
             const textBefore = text.substring(lastIndex, matchStart);
             if (textBefore) {
-              parts.push(<span key={`text-${index}`}>{textBefore}</span>);
+              parts.push(<span key={`text-${passage.id}-${index}`}>{textBefore}</span>);
             }
           }
           
-          // Add blank for this placeholder
-          if (blankIndex < blanks.length) {
-            const blank = blanks[blankIndex];
+          // Add blank for this placeholder - use passage-specific blanks only
+          if (passageBlankIndex < blanks.length) {
+            const blank = blanks[passageBlankIndex];
             const isCorrect = isBlankCorrect(blank);
             const inputClassName = showResults 
               ? isCorrect 
@@ -228,7 +237,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
               : 'border-border';
 
             parts.push(
-              <span key={`blank-${blank.id}`} className="inline-block relative mx-1">
+              <span key={`blank-${passage.id}-${blank.id}`} className="inline-block relative mx-1">
                 <Input
                   value={answers[blank.id] || ''}
                   onChange={(e) => handleAnswerChange(blank.id, e.target.value)}
@@ -243,7 +252,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
                 )}
               </span>
             );
-            blankIndex++;
+            passageBlankIndex++; // Increment passage-specific index
           }
           
           lastIndex = matchStart + (match[0]?.length || 0);
@@ -253,7 +262,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
         if (lastIndex < text.length) {
           const remainingText = text.substring(lastIndex);
           if (remainingText) {
-            parts.push(<span key="text-end">{remainingText}</span>);
+            parts.push(<span key={`text-end-${passage.id}`}>{remainingText}</span>);
           }
         }
       }
@@ -264,16 +273,22 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
       const result = [];
       let currentPosition = 0;
       
-      // Sort blanks by position ascending
-      const sortedBlanks = [...blanks].sort((a, b) => a.position - b.position);
+      // Sort blanks by position ascending (passage-specific)
+      const sortedBlanks = [...blanks].sort((a, b) => {
+        const posA = typeof a.position === 'number' ? a.position : parseInt(String(a.position), 10);
+        const posB = typeof b.position === 'number' ? b.position : parseInt(String(b.position), 10);
+        return posA - posB;
+      });
       
       sortedBlanks.forEach((blank, index) => {
+        const blankPosition = typeof blank.position === 'number' ? blank.position : parseInt(String(blank.position), 10);
+        
         // Add text before this blank
-        if (blank.position > currentPosition) {
-          const textBefore = text.substring(currentPosition, blank.position);
+        if (blankPosition > currentPosition) {
+          const textBefore = text.substring(currentPosition, blankPosition);
           if (textBefore) {
             result.push(
-              <span key={`text-${index}`}>{textBefore}</span>
+              <span key={`text-${passage.id}-${index}`}>{textBefore}</span>
             );
           }
         }
@@ -287,7 +302,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
           : 'border-border';
 
         result.push(
-          <span key={`blank-${blank.id}`} className="inline-block relative mx-1">
+          <span key={`blank-${passage.id}-${blank.id}`} className="inline-block relative mx-1">
             <Input
               value={answers[blank.id] || ''}
               onChange={(e) => handleAnswerChange(blank.id, e.target.value)}
@@ -303,7 +318,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
           </span>
         );
         
-        currentPosition = blank.position;
+        currentPosition = blankPosition;
       });
       
       // Add remaining text after the last blank
@@ -311,7 +326,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
         const textAfter = text.substring(currentPosition);
         if (textAfter) {
           result.push(
-            <span key="text-end">{textAfter}</span>
+            <span key={`text-end-${passage.id}`}>{textAfter}</span>
           );
         }
       }
@@ -325,7 +340,7 @@ export const FillBlankRenderer: React.FC<FillBlankRendererProps> = ({
       {/* Header */}
       <Card className="border-2">
         <CardHeader>
-          <CardTitle className="text-xl">📝 {gameSchema.title}</CardTitle>
+          <CardTitle className="text-xl"> {gameSchema.title}</CardTitle>
           <p className="text-muted-foreground">{content.instructions}</p>
         </CardHeader>
         <CardContent>

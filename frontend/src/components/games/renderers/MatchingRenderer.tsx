@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameSchema, GameState, GameResults, MatchingContent } from '@/types/game-schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,25 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
   const [isComplete, setIsComplete] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [shuffledRightOptions, setShuffledRightOptions] = useState<string[]>([]);
+  const [shuffledLeftPairs, setShuffledLeftPairs] = useState<typeof content.pairs>([]);
+
+  // Shuffle function
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Initialize shuffled arrays on component mount
+  useEffect(() => {
+    const rightOptions = content.pairs.map(pair => pair.right);
+    setShuffledRightOptions(shuffleArray(rightOptions));
+    setShuffledLeftPairs(shuffleArray(content.pairs));
+  }, [content.pairs]);
 
   const checkCorrectness = () => {
     let correctCount = 0;
@@ -168,6 +187,11 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
     setIsComplete(false);
     setShowResults(false);
     setGameState(prev => ({ ...prev, score: 0, isCompleted: false }));
+    
+    // Re-shuffle the options when resetting
+    const rightOptions = content.pairs.map(pair => pair.right);
+    setShuffledRightOptions(shuffleArray(rightOptions));
+    setShuffledLeftPairs(shuffleArray(content.pairs));
   };
 
   const isAllMatched = () => {
@@ -176,7 +200,7 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
 
   // Get all unique right values for display
   const getRightOptions = () => {
-    return content.pairs.map(pair => pair.right);
+    return shuffledRightOptions;
   };
 
   if (isComplete) {
@@ -308,7 +332,7 @@ export const MatchingRenderer: React.FC<MatchingRendererProps> = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {content.pairs.map((pair) => {
+              {shuffledLeftPairs.map((pair) => {
                 const isMatched = !!matches[pair.id];
                 const isSelected = selectedLeft === pair.id;
                 const matchedRight = matches[pair.id];

@@ -139,8 +139,8 @@ export interface WordPuzzleWord {
   word: string;
   hint: string;
   direction: 'horizontal' | 'vertical';
-  startRow: number;
-  startCol: number;
+  startRow: number | string;
+  startCol: number | string;
 }
 
 export interface SortingContent {
@@ -204,7 +204,7 @@ export interface FillBlankPassage {
 
 export interface BlankItem {
   id: string;
-  position: number;
+  position: number | string;
   correctAnswer: string;
   options?: string[];
   hint?: string;

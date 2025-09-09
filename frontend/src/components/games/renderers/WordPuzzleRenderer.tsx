@@ -143,11 +143,13 @@ export const WordPuzzleRenderer: React.FC<WordPuzzleRendererProps> = ({
       
       // Use AI-provided coordinates instead of random placement
       const direction = wordObj.direction;
-      const startRow = wordObj.startRow;
-      const startCol = wordObj.startCol;
+      
+      // Convert startRow and startCol to numbers if they come as strings
+      const startRow = typeof wordObj.startRow === 'string' ? parseInt(wordObj.startRow, 10) : wordObj.startRow;
+      const startCol = typeof wordObj.startCol === 'string' ? parseInt(wordObj.startCol, 10) : wordObj.startCol;
       
       // Validate the AI-provided coordinates
-      if (startRow < 0 || startRow >= size || startCol < 0 || startCol >= size) {
+      if (isNaN(startRow) || isNaN(startCol) || startRow < 0 || startRow >= size || startCol < 0 || startCol >= size) {
         console.warn(`Invalid coordinates for word "${word}": (${startRow}, ${startCol})`);
         return false;
       }
