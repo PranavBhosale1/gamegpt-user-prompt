@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Layout } from '@/components/Layout';
-import { DynamicGameRenderer } from '@/components/games/DynamicGameRenderer';
 import { GameSchema } from '@/types/game-schema';
 import { useGameGeneration } from '@/hooks/useGameGeneration';
 import { GameRequest } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+
+// Lazy load the DynamicGameRenderer only when needed
+const DynamicGameRenderer = lazy(() => import('@/components/games/DynamicGameRenderer'));
 import { 
   Loader2, 
   Wand2, 
@@ -176,17 +178,33 @@ export default function Dynamic() {
           </div>
 
           {/* Game Renderer */}
-          <DynamicGameRenderer 
-            gameSchema={generatedGame}
-            onComplete={(results) => {
-              console.log('Game completed:', results);
-              toast({
-                title: "Game Completed!",
-                description: `You scored ${results.score}/${results.maxScore} points!`
-              });
-            }}
-            onExit={() => setGeneratedGame(null)}
-          />
+          <Suspense 
+            fallback={
+              <Card className="border-2">
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <p className="text-lg font-medium">Loading Game Renderer...</p>
+                    <p className="text-sm text-muted-foreground">
+                      Preparing your {generatedGame.type} game experience
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            }
+          >
+            <DynamicGameRenderer 
+              gameSchema={generatedGame}
+              onComplete={(results) => {
+                console.log('Game completed:', results);
+                toast({
+                  title: "Game Completed!",
+                  description: `You scored ${results.score}/${results.maxScore} points!`
+                });
+              }}
+              onExit={() => reset()}
+            />
+          </Suspense>
         </div>
       </Layout>
     );

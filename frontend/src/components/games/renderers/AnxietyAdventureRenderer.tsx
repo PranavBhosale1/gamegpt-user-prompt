@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Brain, Lightbulb, TrendingUp, TrendingDown, RotateCcw } from 'lucide-react';
+import { Heart, Brain, Lightbulb, RotateCcw } from 'lucide-react';
 
 interface AnxietyAdventureRendererProps {
   gameSchema: GameSchema;
@@ -148,7 +148,7 @@ export const AnxietyAdventureRenderer: React.FC<AnxietyAdventureRendererProps> =
       <Card className="border-2 shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">
-            🌟 {currentScenario.title}
+             {currentScenario.title}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
@@ -197,26 +197,7 @@ export const AnxietyAdventureRenderer: React.FC<AnxietyAdventureRendererProps> =
                         : 'border-border hover:border-primary/50 hover:bg-muted'
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <span className="font-medium">{choice.text}</span>
-                      <div className="flex items-center gap-2 ml-4">
-                        {choice.anxietyChange > 0 && (
-                          <Badge variant="outline" className="text-red-600">
-                            <TrendingUp className="w-3 h-3 mr-1" />
-                            +{choice.anxietyChange}
-                          </Badge>
-                        )}
-                        {choice.anxietyChange < 0 && (
-                          <Badge variant="outline" className="text-green-600">
-                            <TrendingDown className="w-3 h-3 mr-1" />
-                            {choice.anxietyChange}
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className="text-blue-600">
-                          +{choice.points}pts
-                        </Badge>
-                      </div>
-                    </div>
+                    <span className="font-medium">{choice.text}</span>
                   </button>
                 ))}
               </div>
