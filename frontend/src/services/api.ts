@@ -26,7 +26,7 @@ class ApiService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = 'https://backend.GLOBIANS.IN'; 
+    this.baseUrl = 'http://localhost:8000'; 
   }
 
   /**

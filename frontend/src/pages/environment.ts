@@ -1,5 +1,5 @@
 const environment = {
-  apiUrl: 'http://localhost:3000' // change to your actual Node API base
+  apiUrl: 'http://localhost:8000' // FastAPI backend running on port 8000
 };
 
 export default environment;

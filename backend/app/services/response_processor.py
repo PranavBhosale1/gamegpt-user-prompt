@@ -124,27 +124,89 @@ class ResponseProcessor:
             fixed_text = self._attempt_json_fix(cleaned_text)
             try:
                 return json.loads(fixed_text)
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e2:
+                self.logger.error(f"JSON fix also failed: {str(e2)}")
                 raise Exception(f"Invalid JSON in LLM response: {str(e)}")
     
     def _attempt_json_fix(self, text: str) -> str:
         """Attempt to fix common JSON formatting issues"""
         self.logger.debug("Attempting to fix JSON formatting issues...")
         
-        # Common fixes
+        # First, try to extract JSON from markdown if present
+        text = self._extract_json_from_markdown(text)
+        
+        # Common fixes - apply in order of specificity
         fixes = [
-            # Fix missing quotes around keys
-            (r'(\w+):', r'"\1":'),
-            # Fix single quotes to double quotes
-            (r"'([^']*)'", r'"\1"'),
+            # Fix double curly braces (common LLM issue) - do this first
+            (r'\{\{', r'{'),
+            (r'\}\}', r'}'),
+            # Fix boolean values (Python style to JSON)
+            (r':\s*True\b', ': true'),
+            (r':\s*False\b', ': false'),
+            (r':\s*None\b', ': null'),
             # Fix trailing commas
             (r',(\s*[}\]])', r'\1'),
             # Fix missing commas between objects
             (r'}(\s*){', r'},\1{'),
+            # Fix missing commas between array elements
+            (r'}(\s*)\[', r'},\1['),
+            (r'\](\s*){', r'],\1{'),
         ]
         
         for pattern, replacement in fixes:
             text = re.sub(pattern, replacement, text)
+        
+        # Additional cleaning
+        text = self._clean_json_text(text)
+        
+        return text
+    
+    def _extract_json_from_markdown(self, text: str) -> str:
+        """Extract JSON from markdown code blocks"""
+        # Look for JSON in code blocks with more flexible matching
+        json_patterns = [
+            r'```(?:json)?\s*(\{.*?\})\s*```',  # Standard markdown
+            r'```json\s*(\{.*?\})\s*```',        # Explicit json
+            r'```\s*(\{.*?\})\s*```',            # Generic code block
+        ]
+        
+        for pattern in json_patterns:
+            match = re.search(pattern, text, re.DOTALL)
+            if match:
+                return match.group(1)
+        
+        # Look for JSON without code blocks but with extra text
+        json_start = text.find('{')
+        json_end = text.rfind('}')
+        if json_start != -1 and json_end != -1 and json_end > json_start:
+            return text[json_start:json_end + 1]
+        
+        return text
+    
+    def _clean_json_text(self, text: str) -> str:
+        """Clean up common JSON text issues"""
+        # Remove any leading/trailing whitespace
+        text = text.strip()
+        
+        # Remove any text before the first {
+        first_brace = text.find('{')
+        if first_brace > 0:
+            text = text[first_brace:]
+        
+        # Remove any text after the last }
+        last_brace = text.rfind('}')
+        if last_brace != -1 and last_brace < len(text) - 1:
+            text = text[:last_brace + 1]
+        
+        # Remove control characters that can break JSON parsing
+        import string
+        printable = set(string.printable)
+        text = ''.join(char for char in text if char in printable or char in '\n\t')
+        
+        # Fix common string escaping issues
+        text = text.replace('\\"', '"')  # Unescape quotes
+        text = text.replace('\\n', '\\n')  # Keep newlines as \n
+        text = text.replace('\\t', '\\t')  # Keep tabs as \t
         
         return text
     
@@ -172,6 +234,9 @@ class ResponseProcessor:
             if 'version' not in json_data:
                 json_data['version'] = "1.0"
             
+            # Fix scoring values to be within valid ranges
+            self._fix_scoring_values(json_data)
+            
             # Validate and create GameSchema
             game_schema = GameSchema(**json_data)
             
@@ -183,6 +248,63 @@ class ResponseProcessor:
         except Exception as e:
             self.logger.error(f"Schema validation failed: {str(e)}")
             raise Exception(f"Invalid game schema: {str(e)}")
+    
+    def _fix_scoring_values(self, json_data: Dict[str, Any]) -> None:
+        """Fix scoring values to be within valid ranges"""
+        if 'scoring' not in json_data:
+            return
+        
+        scoring = json_data['scoring']
+        
+        # Fix pointsPerCorrect (5-25)
+        if 'pointsPerCorrect' in scoring:
+            points = scoring['pointsPerCorrect']
+            if points > 25:
+                self.logger.warning(f"Clamping pointsPerCorrect from {points} to 25")
+                scoring['pointsPerCorrect'] = 25
+            elif points < 5:
+                self.logger.warning(f"Clamping pointsPerCorrect from {points} to 5")
+                scoring['pointsPerCorrect'] = 5
+        
+        # Fix maxScore (50-200)
+        if 'maxScore' in scoring:
+            max_score = scoring['maxScore']
+            if max_score > 200:
+                self.logger.warning(f"Clamping maxScore from {max_score} to 200")
+                scoring['maxScore'] = 200
+            elif max_score < 50:
+                self.logger.warning(f"Clamping maxScore from {max_score} to 50")
+                scoring['maxScore'] = 50
+        
+        # Fix pointsPerIncorrect (0 to -10)
+        if 'pointsPerIncorrect' in scoring:
+            points = scoring['pointsPerIncorrect']
+            if points > 0:
+                self.logger.warning(f"Clamping pointsPerIncorrect from {points} to 0")
+                scoring['pointsPerIncorrect'] = 0
+            elif points < -10:
+                self.logger.warning(f"Clamping pointsPerIncorrect from {points} to -10")
+                scoring['pointsPerIncorrect'] = -10
+        
+        # Fix bonusForSpeed (0-15)
+        if 'bonusForSpeed' in scoring:
+            bonus = scoring['bonusForSpeed']
+            if bonus > 15:
+                self.logger.warning(f"Clamping bonusForSpeed from {bonus} to 15")
+                scoring['bonusForSpeed'] = 15
+            elif bonus < 0:
+                self.logger.warning(f"Clamping bonusForSpeed from {bonus} to 0")
+                scoring['bonusForSpeed'] = 0
+        
+        # Fix bonusForStreak (0-20)
+        if 'bonusForStreak' in scoring:
+            bonus = scoring['bonusForStreak']
+            if bonus > 20:
+                self.logger.warning(f"Clamping bonusForStreak from {bonus} to 20")
+                scoring['bonusForStreak'] = 20
+            elif bonus < 0:
+                self.logger.warning(f"Clamping bonusForStreak from {bonus} to 0")
+                scoring['bonusForStreak'] = 0
     
     def _validate_content_structure(self, game_schema: GameSchema) -> None:
         """Validate game content structure based on game type"""
