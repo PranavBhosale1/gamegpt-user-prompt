@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: gamegpt-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        fromService:
+          type: web
+          name: gamegpt-backend
+          property: port
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: ALLOWED_ORIGINS
+        value: "https://gamegpt-frontend.onrender.com,https://gamegpt-user-prompt.onrender.com"
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GOOGLE_MODEL
+        value: "gemini-2.0-flash-exp"
+      - key: REQUEST_TIMEOUT
+        value: "60"
+      - key: MAX_TOKENS
+        value: "4000"
+      - key: TEMPERATURE
+        value: "0.7"
+      - key: RATE_LIMIT_REQUESTS
+        value: "100"
+      - key: RATE_LIMIT_WINDOW
+        value: "3600"

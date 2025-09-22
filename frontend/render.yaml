@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: gamegpt-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://gamegpt-backend.onrender.com
+      - key: VITE_S3_UPLOAD_URL
+        value: https://gamegpt-backend.onrender.com/upload
+      - key: VITE_NODE_API_URL
+        value: https://gamegpt-backend.onrender.com/api/reaction
+      - key: VITE_NODE_API_URL_EMOTION
+        value: https://gamegpt-backend.onrender.com/api/emotions
+      - key: VITE_NODE_API_URL_GET_EMOTION
+        value: https://gamegpt-backend.onrender.com/api/getemotions
